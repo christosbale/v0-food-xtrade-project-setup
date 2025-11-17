@@ -1,0 +1,34 @@
+-- Create test users in Supabase Auth
+-- Note: You need to run this via Supabase SQL Editor or use the Supabase Dashboard to create users
+
+-- Instructions:
+-- 1. Go to Supabase Dashboard > Authentication > Users
+-- 2. Click "Add User" and create the following users manually:
+--
+-- User 1 (Supplier):
+--   Email: supplier1@foodxtrade.com
+--   Password: Test123!@#
+--   Auto Confirm User: Yes
+--
+-- User 2 (Supplier):
+--   Email: supplier2@foodxtrade.com
+--   Password: Test123!@#
+--   Auto Confirm User: Yes
+--
+-- User 3 (Buyer):
+--   Email: buyer1@foodxtrade.com
+--   Password: Test123!@#
+--   Auto Confirm User: Yes
+--
+-- After creating these users, you need to link them to companies in the companies table
+-- by updating the user_id field with the corresponding auth.users.id
+
+-- Alternative: If you have the user IDs, you can update the companies table:
+-- UPDATE public.companies
+-- SET user_id = 'USER_ID_FROM_AUTH_USERS_TABLE'
+-- WHERE company_name = 'Mediterranean Exports Ltd';
+--
+-- Repeat for other companies
+
+-- For production: Users will be created through the registration flow
+-- which will handle both auth.users creation and companies table insertion
