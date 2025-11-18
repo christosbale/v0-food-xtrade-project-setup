@@ -1,4 +1,4 @@
-import { Building2, Users, FileCheck, LayoutDashboard } from 'lucide-react'
+import { Building2, Users, FileCheck, LayoutDashboard, Package, CreditCard } from 'lucide-react'
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -9,19 +9,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { checkAdmin } from '@/lib/auth/check-admin'
 
 const adminNavigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Pending companies", href: "/admin/companies/pending", icon: FileCheck },
   { name: "All companies", href: "/admin/companies", icon: Building2 },
+  { name: "Products", href: "/admin/products", icon: Package },
   { name: "Users", href: "/admin/users", icon: Users },
+  { name: "Billing", href: "/admin/billing", icon: CreditCard },
 ]
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { user } = await checkAdmin()
+
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -64,13 +69,17 @@ export default function AdminLayout({
                   AD
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium">Admin User</span>
+              <span className="text-sm font-medium">{user.email}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard">Back to Dashboard</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/api/auth/signout">Logout</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

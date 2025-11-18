@@ -17,6 +17,12 @@ export interface Company {
   verification_status: 'pending' | 'verified' | 'rejected'
   verification_notes: string | null
   subscription_tier: 'basic' | 'pro' | 'premium'
+  can_buy: boolean
+  can_sell: boolean
+  approved_by: string | null
+  approved_at: string | null
+  vat_validated: boolean
+  vat_validation_date: string | null
   created_at: string
   updated_at: string
 }
@@ -37,6 +43,9 @@ export interface Product {
   packaging: string | null
   certifications: string[]
   status: 'draft' | 'published'
+  reviewed_by: string | null
+  reviewed_at: string | null
+  admin_notes: string | null
   created_at: string
   updated_at: string
 }
@@ -82,4 +91,36 @@ export interface UserSession {
     email: string
   }
   company: Company | null
+}
+
+export type UserRole = 'admin' | 'buyer' | 'supplier'
+
+export interface UserProfile {
+  id: string
+  role: UserRole
+  created_at: string
+  updated_at: string
+}
+
+export interface AdminAction {
+  id: string
+  admin_id: string
+  action_type: string
+  target_type: string
+  target_id: string
+  details: Record<string, any>
+  created_at: string
+}
+
+export interface SubscriptionHistory {
+  id: string
+  company_id: string
+  plan_id: string
+  started_at: string
+  ended_at: string | null
+  status: string
+  promotional_months: number
+  granted_by: string | null
+  promotion_reason: string | null
+  created_at: string
 }

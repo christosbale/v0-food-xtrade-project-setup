@@ -9,48 +9,40 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 
-// Mock data for users
-const users = [
-  {
-    id: "1",
-    name: "John Smith",
-    email: "john@freshfarms.example.com",
-    role: "Supplier",
-    company: "Fresh Farms Ltd",
-    status: "Active",
-    joinedAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    id: "2",
-    name: "Marie Dubois",
-    email: "marie@organicgrains.example.com",
-    role: "Supplier",
-    company: "Organic Grains Inc",
-    status: "Active",
-    joinedAt: "2024-01-10T09:15:00Z",
-  },
-  {
-    id: "3",
-    name: "Giuseppe Rossi",
-    email: "giuseppe@medoils.example.com",
-    role: "Supplier",
-    company: "Mediterranean Oils Co",
-    status: "Active",
-    joinedAt: "2024-01-08T16:45:00Z",
-  },
-  {
-    id: "4",
-    name: "Anna Johnson",
-    email: "anna@buyerco.example.com",
-    role: "Buyer",
-    company: "Global Food Distributors",
-    status: "Active",
-    joinedAt: "2024-01-12T14:20:00Z",
-  },
-]
+export default async function UsersPage() {
+  const supabase = await createClient()
+  
+  const { data: users } = await supabase
+    .from('user_profiles')
+    .select(`
+      id,
+      role,
+      created_at
+    `)
+    .order('created_at', { ascending: false })
 
-export default function UsersPage() {
+  // For each user, get their company and auth data
+  const usersWithDetails = await Promise.all(
+    (users || []).map(async (user) => {
+      const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
+      const { data: company } = await supabase
+        .from('companies')
+        .select('company_name, company_type')
+        .eq('user_id', user.id)
+        .single()
+      
+      return {
+        ...user,
+        email: authUser?.user?.email || 'N/A',
+        company_name: company?.company_name || 'No company',
+        company_type: company?.company_type || null,
+      }
+    })
+  )
+
   return (
     <div className="space-y-6">
       <div>
@@ -64,52 +56,65 @@ export default function UsersPage() {
         <CardHeader>
           <CardTitle>All Users</CardTitle>
           <CardDescription>
-            {users.length} registered users on the platform
+            {usersWithDetails.length} registered users on the platform
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{user.role}</Badge>
-                  </TableCell>
-                  <TableCell>{user.company}</TableCell>
-                  <TableCell>
-                    <Badge className="bg-green-500 hover:bg-green-600">
-                      {user.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(user.joinedAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button size="sm" variant="outline">
-                      Manage
-                    </Button>
-                  </TableCell>
+          {usersWithDetails.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Company Type</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {usersWithDetails.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.email}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={user.role === 'admin' ? 'default' : 'outline'}
+                        className="capitalize"
+                      >
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{user.company_name}</TableCell>
+                    <TableCell>
+                      {user.company_type && (
+                        <Badge variant="secondary" className="capitalize">
+                          {user.company_type}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(user.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="outline" asChild>
+                        <Link href={`/admin/users/${user.id}`}>
+                          Manage
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              No users found
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

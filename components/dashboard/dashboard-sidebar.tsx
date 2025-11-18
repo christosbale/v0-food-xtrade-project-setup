@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { LayoutDashboard, Package, ShoppingCart, MessageSquare, BarChart3, Settings, Menu, X, CreditCard, Building2 } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, MessageSquare, BarChart3, Settings, Menu, X, CreditCard, Building2, ShieldCheck } from 'lucide-react'
+import { isCurrentUserAdmin } from '@/lib/auth/current-company-client'
 
 const sidebarNavItems = [
   {
@@ -53,6 +54,11 @@ const sidebarNavItems = [
 export function DashboardSidebar() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    isCurrentUserAdmin().then(setIsAdmin)
+  }, [])
 
   return (
     <>
@@ -77,11 +83,30 @@ export function DashboardSidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-[64px] z-30 h-[calc(100vh-64px)] w-64 border-r bg-background transition-transform duration-300 lg:sticky lg:translate-x-0',
+          'fixed left-0 top-[64px] z-30 h-[calc(100vh-64px)] w-72 border-r bg-sidebar transition-transform duration-300 lg:sticky lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <nav className="flex h-full flex-col gap-2 p-4">
+        <nav className="flex h-full flex-col gap-2 p-6">
+          {isAdmin && (
+            <>
+              <Link
+                href="/admin"
+                onClick={() => setIsOpen(false)}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-4 py-3.5 text-sm font-semibold transition-all border-2',
+                  pathname?.startsWith('/admin')
+                    ? 'bg-secondary text-secondary-foreground shadow-sm'
+                    : 'border-secondary text-secondary hover:bg-secondary/10 hover:shadow-sm'
+                )}
+              >
+                <ShieldCheck className="h-5 w-5" />
+                Admin Panel
+              </Link>
+              <div className="h-px bg-border my-3" />
+            </>
+          )}
+          
           {sidebarNavItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -92,10 +117,10 @@ export function DashboardSidebar() {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all',
                   isActive
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'bg-secondary text-secondary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
                 )}
               >
                 <Icon className="h-5 w-5" />

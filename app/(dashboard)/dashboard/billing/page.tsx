@@ -1,70 +1,77 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, CreditCard } from 'lucide-react'
+import { getCurrentCompany } from '@/lib/auth/current-company'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { ChangePlanButton } from '@/components/billing/change-plan-button'
+import { AddPaymentMethodDialog } from '@/components/billing/add-payment-method-dialog'
 
-export default function BillingPage() {
-  // TODO: Fetch actual data from API/database
-  const currentPlan = {
-    name: 'Pro',
-    price: 150,
-    status: 'Active' as 'Active' | 'Trial' | 'Expired',
+export default async function BillingPage() {
+  const session = await getCurrentCompany()
+
+  if (!session?.company) {
+    redirect('/login')
+  }
+
+  const supabase = await createClient()
+
+  // Fetch current subscription details
+  const { data: currentSubscription } = await supabase
+    .from('subscription_history')
+    .select('*, plan:subscription_plans(*)')
+    .eq('company_id', session.company.id)
+    .eq('status', 'active')
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // Fetch all available plans
+  const { data: plans } = await supabase
+    .from('subscription_plans')
+    .select('*')
+    .eq('is_active', true)
+    .order('price', { ascending: true })
+
+  // Fetch products count
+  const { count: productsCount } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true })
+    .eq('company_id', session.company.id)
+
+  // Fetch active RFQs count
+  const { count: rfqsCount } = await supabase
+    .from('rfqs')
+    .select('*', { count: 'exact', head: true })
+    .eq('supplier_company_id', session.company.id)
+    .eq('status', 'pending')
+
+  // Fetch payment method
+  const { data: paymentMethod } = await supabase
+    .from('payment_methods')
+    .select('*')
+    .eq('company_id', session.company.id)
+    .eq('is_default', true)
+    .maybeSingle()
+
+  const currentPlan = currentSubscription?.plan || plans?.find(p => p.id === 'free')
+  const currentPlanData = {
+    name: currentPlan?.name || 'Free',
+    price: currentPlan?.price || 0,
+    status: currentSubscription?.status === 'active' ? 'Active' : 'Inactive',
+    id: currentPlan?.id || 'free'
   }
 
   const usage = {
-    activeProducts: 42,
-    productsLimit: 100,
-    activeOffers: 18,
-    rfqsThisMonth: 34,
+    activeProducts: productsCount || 0,
+    productsLimit: currentPlan?.products_limit || 5,
+    activeRfqs: rfqsCount || 0,
   }
 
-  const plans = [
-    {
-      id: 'basic',
-      name: 'Basic',
-      price: 50,
-      features: [
-        'Up to 20 products',
-        'Basic RFQ responses',
-        'Email support',
-        'Basic analytics',
-      ],
-    },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: 150,
-      features: [
-        'Up to 100 products',
-        'Unlimited RFQ responses',
-        'Priority email support',
-        'Advanced analytics',
-        'Custom branding',
-        'API access',
-      ],
-      popular: true,
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      price: 300,
-      features: [
-        'Unlimited products',
-        'Unlimited RFQ responses',
-        '24/7 phone support',
-        'Enterprise analytics',
-        'Custom branding',
-        'API access',
-        'Dedicated account manager',
-        'Custom integrations',
-      ],
-    },
-  ]
-
-  const paymentDetails = {
-    method: 'Visa ending in 1234',
-    nextBillingDate: '01/12/2025',
-  }
+  // Calculate next billing date (30 days from subscription start)
+  const nextBillingDate = currentSubscription
+    ? new Date(new Date(currentSubscription.started_at).getTime() + 30 * 24 * 60 * 60 * 1000)
+    : new Date()
 
   return (
     <div className="container max-w-7xl py-8 space-y-8">
@@ -80,16 +87,16 @@ export default function BillingPage() {
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-2xl">Current Plan: {currentPlan.name}</CardTitle>
+              <CardTitle className="text-2xl">Current Plan: {currentPlanData.name}</CardTitle>
               <CardDescription className="text-lg mt-1">
-                €{currentPlan.price} / month
+                €{currentPlanData.price} / month
               </CardDescription>
             </div>
             <Badge 
-              variant={currentPlan.status === 'Active' ? 'default' : currentPlan.status === 'Trial' ? 'secondary' : 'destructive'}
+              variant={currentPlanData.status === 'Active' ? 'default' : 'destructive'}
               className="text-sm px-3 py-1"
             >
-              {currentPlan.status}
+              {currentPlanData.status}
             </Badge>
           </div>
         </CardHeader>
@@ -98,37 +105,39 @@ export default function BillingPage() {
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Active Products</p>
               <p className="text-2xl font-bold">
-                {usage.activeProducts} <span className="text-base font-normal text-muted-foreground">/ {usage.productsLimit}</span>
+                {usage.activeProducts} 
+                {usage.productsLimit && (
+                  <span className="text-base font-normal text-muted-foreground"> / {usage.productsLimit}</span>
+                )}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Active Offers</p>
-              <p className="text-2xl font-bold">{usage.activeOffers}</p>
+              <p className="text-sm text-muted-foreground">Active RFQs</p>
+              <p className="text-2xl font-bold">{usage.activeRfqs}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">RFQs This Month</p>
-              <p className="text-2xl font-bold">{usage.rfqsThisMonth}</p>
+              <p className="text-sm text-muted-foreground">Plan Status</p>
+              <p className="text-2xl font-bold">{currentPlanData.status}</p>
             </div>
           </div>
-          <Button size="lg" className="w-full md:w-auto">
-            Change Plan
-          </Button>
         </CardContent>
       </Card>
 
       {/* Plan Selection */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Available Plans</h2>
-        <div className="grid gap-6 lg:grid-cols-3">
-          {plans.map((plan) => {
-            const isCurrentPlan = plan.name === currentPlan.name
+        <div className="grid gap-6 lg:grid-cols-4">
+          {plans?.map((plan) => {
+            const isCurrentPlan = plan.id === currentPlanData.id
+            const isPro = plan.id === 'pro'
+            const features = Array.isArray(plan.features) ? plan.features : []
             
             return (
               <Card 
                 key={plan.id} 
-                className={`relative ${plan.popular ? 'border-secondary border-2' : ''} ${isCurrentPlan ? 'bg-muted/50' : ''}`}
+                className={`relative ${isPro ? 'border-secondary border-2' : ''} ${isCurrentPlan ? 'bg-muted/50' : ''}`}
               >
-                {plan.popular && (
+                {isPro && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge className="bg-secondary text-secondary-foreground">Most Popular</Badge>
                   </div>
@@ -147,20 +156,18 @@ export default function BillingPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3">
-                    {plan.features.map((feature, index) => (
+                    {features.map((feature: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-secondary shrink-0 mt-0.5" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button 
-                    className="w-full" 
-                    variant={isCurrentPlan ? 'outline' : 'default'}
-                    disabled={isCurrentPlan}
-                  >
-                    {isCurrentPlan ? 'Current Plan' : `Upgrade to ${plan.name}`}
-                  </Button>
+                  <ChangePlanButton 
+                    planId={plan.id}
+                    planName={plan.name}
+                    isCurrentPlan={isCurrentPlan}
+                  />
                 </CardContent>
               </Card>
             )
@@ -183,17 +190,19 @@ export default function BillingPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Payment Method</p>
-              <p className="font-medium">{paymentDetails.method}</p>
+              <p className="font-medium">
+                {paymentMethod 
+                  ? `${paymentMethod.card_brand} ending in ${paymentMethod.card_last_four}`
+                  : 'No payment method added'
+                }
+              </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Next Billing Date</p>
-              <p className="font-medium">{paymentDetails.nextBillingDate}</p>
+              <p className="font-medium">{nextBillingDate.toLocaleDateString()}</p>
             </div>
           </div>
-          <Button variant="outline">
-            <CreditCard className="mr-2 h-4 w-4" />
-            Update Payment Method
-          </Button>
+          <AddPaymentMethodDialog />
         </CardContent>
       </Card>
 

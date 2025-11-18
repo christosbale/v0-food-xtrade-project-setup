@@ -1,7 +1,7 @@
 import { SiteHeader } from '@/components/site-header'
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
@@ -11,7 +11,7 @@ export default function DashboardLayout({
       <SiteHeader />
       <div className="flex flex-1">
         <DashboardSidebar />
-        <main className="flex-1 bg-muted/30">
+        <main className="flex-1 bg-muted/30 p-8">
           {children}
         </main>
       </div>

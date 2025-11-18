@@ -1,9 +1,92 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Package, ShoppingCart, TrendingUp, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Package, ShoppingCart, TrendingUp, Users, ArrowUpRight, ArrowDownRight, MessageSquare, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { Badge } from '@/components/ui/badge'
+import { redirect } from 'next/navigation'
 
-export default function SupplierDashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient()
+  
+  let company = null
+  let user = null
+
+  try {
+    const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
+    
+    if (userError) {
+      console.error('[v0] Dashboard: User fetch error:', userError)
+    } else {
+      user = userData
+    }
+    
+    if (user) {
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (companyError) {
+        console.error('[v0] Dashboard: Company fetch error:', companyError)
+      } else {
+        company = companyData
+      }
+    }
+  } catch (error) {
+    console.error('[v0] Dashboard: Fatal error:', error)
+    // Continue rendering with null values
+  }
+
+  // If no user data at all, show basic message
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-2">
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-2xl">Loading Dashboard...</CardTitle>
+            <CardDescription className="text-base">
+              Please wait while we load your account
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
+  }
+
+  // If user but no company, show setup message
+  if (!company) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-2">
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-2xl">Welcome to FoodXtrade!</CardTitle>
+            <CardDescription className="text-base">
+              Complete your registration to start trading
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <p className="text-sm text-muted-foreground">
+              Your email: <strong>{user?.email}</strong>
+            </p>
+            <p className="text-base">
+              Please complete your company registration to access the full platform.
+            </p>
+            <div className="flex gap-4">
+              <Button asChild size="lg">
+                <Link href="/register/supplier">Register as Supplier</Link>
+              </Button>
+              <Button variant="outline" asChild size="lg">
+                <Link href="/register/buyer">Register as Buyer</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   // TODO: Fetch actual data from API
   const stats = {
     totalProducts: 48,
@@ -19,155 +102,147 @@ export default function SupplierDashboardPage() {
   ]
 
   return (
-    <div className="container py-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Welcome back! Here's your business overview
-        </p>
+    <div className="space-y-10">
+      <div className="flex items-start justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-lg text-muted-foreground">
+            Welcome back! Here's your business overview
+          </p>
+        </div>
+        {company && company.company_type === 'supplier' && (
+          <Button asChild size="lg">
+            <Link href="/dashboard/products/new">
+              <Package className="mr-2 h-5 w-5" />
+              Add Product
+            </Link>
+          </Button>
+        )}
+        {company && company.company_type === 'buyer' && (
+          <Button asChild variant="outline" size="lg">
+            <Link href="/dashboard/upgrade">
+              Become a Supplier
+            </Link>
+          </Button>
+        )}
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-base font-semibold">Total Products</CardTitle>
+            <Package className="h-6 w-6 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <span className="inline-flex items-center text-secondary">
-                <ArrowUpRight className="h-3 w-3 mr-1" />
-                +4
-              </span>
-              {' '}from last month
+            <div className="text-4xl font-bold">{stats.totalProducts}</div>
+            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <span>+12% from last month</span>
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active RFQs</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+        
+        <Card className="border-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-base font-semibold">Active RFQs</CardTitle>
+            <ShoppingCart className="h-6 w-6 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeRFQs}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <span className="inline-flex items-center text-secondary">
-                <ArrowUpRight className="h-3 w-3 mr-1" />
-                +2
-              </span>
-              {' '}from yesterday
+            <div className="text-4xl font-bold">{stats.activeRFQs}</div>
+            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <span>+8% from last month</span>
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        
+        <Card className="border-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-base font-semibold">Monthly Revenue</CardTitle>
+            <TrendingUp className="h-6 w-6 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.monthlyRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <span className="inline-flex items-center text-secondary">
-                <ArrowUpRight className="h-3 w-3 mr-1" />
-                +12.5%
-              </span>
-              {' '}from last month
+            <div className="text-4xl font-bold">${(stats.monthlyRevenue / 1000).toFixed(0)}k</div>
+            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <span>+15% from last month</span>
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Buyers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+        
+        <Card className="border-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-base font-semibold">New Buyers</CardTitle>
+            <Users className="h-6 w-6 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.newBuyers}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              <span className="inline-flex items-center text-red-500">
-                <ArrowDownRight className="h-3 w-3 mr-1" />
-                -2
-              </span>
-              {' '}from last week
+            <div className="text-4xl font-bold">{stats.newBuyers}</div>
+            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <span>+20% from last month</span>
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent RFQs and Quick Actions */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent RFQs</CardTitle>
-            <CardDescription>
-              Latest buyer requests waiting for your response
-            </CardDescription>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-2">
+          <CardHeader className="space-y-2 pb-6">
+            <CardTitle className="text-2xl">Recent RFQs</CardTitle>
+            <CardDescription className="text-base">Latest quote requests from buyers</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentRFQs.map((rfq) => (
-                <div key={rfq.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                  <div className="space-y-1">
-                    <p className="font-medium">{rfq.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {rfq.buyer} • {rfq.date}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      rfq.status === 'pending' 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {rfq.status}
-                    </span>
-                    <Button size="sm" variant="outline" asChild>
-                      <Link href={`/dashboard/rfqs/${rfq.id}`}>View</Link>
-                    </Button>
-                  </div>
+          <CardContent className="space-y-4">
+            {recentRFQs.map((rfq) => (
+              <div key={rfq.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                <div className="space-y-1">
+                  <p className="font-semibold">{rfq.title}</p>
+                  <p className="text-sm text-muted-foreground">{rfq.buyer}</p>
                 </div>
-              ))}
-            </div>
-            <Button asChild className="w-full mt-4" variant="outline">
-              <Link href="/dashboard/rfqs">View All RFQs</Link>
+                <div className="text-right space-y-1">
+                  <Badge variant={rfq.status === 'responded' ? 'secondary' : 'outline'}>
+                    {rfq.status}
+                  </Badge>
+                  <p className="text-xs text-muted-foreground">{rfq.date}</p>
+                </div>
+              </div>
+            ))}
+            <Button asChild variant="outline" className="w-full mt-4" size="lg">
+              <Link href="/dashboard/rfqs">
+                View All RFQs
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Manage your business efficiently
-            </CardDescription>
+        <Card className="border-2">
+          <CardHeader className="space-y-2 pb-6">
+            <CardTitle className="text-2xl">Quick Actions</CardTitle>
+            <CardDescription className="text-base">Common tasks and shortcuts</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button asChild className="w-full justify-start">
+            <Button asChild className="w-full justify-start" variant="outline" size="lg">
               <Link href="/dashboard/products/new">
-                <Package className="mr-2 h-4 w-4" />
+                <Package className="mr-3 h-5 w-5" />
                 Add New Product
               </Link>
             </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/dashboard/products">
-                <Package className="mr-2 h-4 w-4" />
-                View All Products
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
+            <Button asChild className="w-full justify-start" variant="outline" size="lg">
               <Link href="/dashboard/rfqs">
-                <ShoppingCart className="mr-2 h-4 w-4" />
+                <ShoppingCart className="mr-3 h-5 w-5" />
                 Browse RFQs
               </Link>
             </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link href="/dashboard/profile">
-                <Users className="mr-2 h-4 w-4" />
-                Update Profile
+            <Button asChild className="w-full justify-start" variant="outline" size="lg">
+              <Link href="/dashboard/messages">
+                <MessageSquare className="mr-3 h-5 w-5" />
+                Check Messages
+              </Link>
+            </Button>
+            <Button asChild className="w-full justify-start" variant="outline" size="lg">
+              <Link href="/dashboard/analytics">
+                <BarChart3 className="mr-3 h-5 w-5" />
+                View Analytics
               </Link>
             </Button>
           </CardContent>

@@ -13,17 +13,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Upload, X, Loader2, AlertCircle } from 'lucide-react'
+import { Upload, X, Loader2, AlertCircle, Info } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { getCurrentCompanyClient } from '@/lib/auth/current-company-client'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 
 interface ProductFormProps {
   initialData?: {
     name: string
     category: string
+    productType: string
     description: string
     price: string
     unit: string
@@ -31,22 +33,11 @@ interface ProductFormProps {
     stock: string
     origin: string
     certifications: string[]
+    harvestDate: string
+    shelfLife: string
   }
   productId?: string
 }
-
-const categories = [
-  'Fresh Fruits',
-  'Vegetables',
-  'Grains & Cereals',
-  'Dairy Products',
-  'Meat & Poultry',
-  'Seafood',
-  'Beverages',
-  'Oils & Fats',
-  'Spices & Seasonings',
-  'Packaged Foods',
-]
 
 const units = ['kg', 'liter', 'piece', 'box', 'ton']
 
@@ -71,6 +62,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     category: initialData?.category || '',
+    productType: initialData?.productType || '',
     description: initialData?.description || '',
     price: initialData?.price || '',
     unit: initialData?.unit || 'kg',
@@ -78,13 +70,18 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     stock: initialData?.stock || '',
     origin: initialData?.origin || '',
     certifications: initialData?.certifications || [],
-    productType: 'bulk', // Default to bulk
-    incoterm: 'EXW', // Default incoterm
-    customsStatus: 'Not cleared', // Default customs status - matches database constraint
+    incoterm: 'EXW',
+    customsStatus: 'Not cleared',
     cropYear: new Date().getFullYear().toString(),
     packaging: '',
-    currency: 'USD', // Default currency
+    currency: 'USD',
+    harvestDate: initialData?.harvestDate || '',
+    shelfLife: initialData?.shelfLife || '',
   })
+
+  const selectedCategory = PRODUCT_CATEGORIES.find(cat => cat.id === formData.category)
+  const availableSubcategories = selectedCategory?.subcategories || []
+  const isFreshProduce = formData.category === 'fresh_produce'
 
   useEffect(() => {
     async function fetchUserCompany() {
@@ -113,7 +110,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     }
 
     fetchUserCompany()
-  }, []) // Empty dependency array - only run once on mount
+  }, [])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -146,6 +143,31 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     setIsLoading(true)
     setError(null)
 
+    if (!formData.category) {
+      setError('Please select a category.')
+      setIsLoading(false)
+      return
+    }
+
+    if (!formData.productType) {
+      setError('Please select a product type.')
+      setIsLoading(false)
+      return
+    }
+
+    if (isFreshProduce) {
+      if (!formData.harvestDate) {
+        setError('Harvest date is required for fresh produce.')
+        setIsLoading(false)
+        return
+      }
+      if (!formData.shelfLife) {
+        setError('Shelf life is required for fresh produce.')
+        setIsLoading(false)
+        return
+      }
+    }
+
     if (!companyId) {
       setError('Company information not loaded. Please refresh the page.')
       setIsLoading(false)
@@ -157,6 +179,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         company_id: companyId,
         product_name: formData.name,
         category: formData.category,
+        product_type: formData.productType,
         origin_country: formData.origin,
         available_quantity: parseFloat(formData.stock),
         unit: formData.unit,
@@ -168,6 +191,10 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         crop_year: formData.cropYear,
         packaging: formData.packaging,
         status: status,
+        ...(isFreshProduce && {
+          harvest_date: formData.harvestDate,
+          shelf_life: formData.shelfLife,
+        }),
       }
 
       console.log('[v0] Submitting product data:', productData)
@@ -247,6 +274,16 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             </div>
           )}
 
+          <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 flex items-start gap-3">
+            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-blue-900">B2B Bulk Orders Only</p>
+              <p className="text-xs text-blue-700">
+                This marketplace is for wholesale and bulk orders. Please ensure your product meets minimum order quantity requirements suitable for B2B trade.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label>Product Images</Label>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
@@ -301,21 +338,85 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
               <Label htmlFor="category">Category *</Label>
               <Select
                 value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
+                onValueChange={(value) => setFormData({ ...formData, category: value, productType: '' })}
                 required
               >
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="productType">Product Type *</Label>
+              <Select
+                value={formData.productType}
+                onValueChange={(value) => setFormData({ ...formData, productType: value })}
+                required
+                disabled={!formData.category}
+              >
+                <SelectTrigger id="productType">
+                  <SelectValue placeholder={formData.category ? "Select product type" : "Select category first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableSubcategories.map((subcat) => (
+                    <SelectItem key={subcat.id} value={subcat.label}>
+                      {subcat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {isFreshProduce && (
+              <>
+                <div className="space-y-2 sm:col-span-2">
+                  <div className="rounded-lg bg-green-50 border border-green-200 p-3 flex items-start gap-2">
+                    <Info className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-green-700">
+                      Fresh produce requires additional information for quality assurance and logistics planning.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="harvestDate">Harvest Date *</Label>
+                  <Input
+                    id="harvestDate"
+                    type="date"
+                    required
+                    value={formData.harvestDate}
+                    onChange={(e) => setFormData({ ...formData, harvestDate: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Expected or actual harvest date
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="shelfLife">Shelf Life (days) *</Label>
+                  <Input
+                    id="shelfLife"
+                    type="number"
+                    min="1"
+                    placeholder="e.g., 14"
+                    required
+                    value={formData.shelfLife}
+                    onChange={(e) => setFormData({ ...formData, shelfLife: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Expected shelf life from harvest date
+                  </p>
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="origin">Country of Origin *</Label>

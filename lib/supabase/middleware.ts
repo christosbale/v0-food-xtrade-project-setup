@@ -29,29 +29,43 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  // Redirect unauthenticated users trying to access dashboard
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith("/dashboard")
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    return NextResponse.redirect(url)
-  }
+    // Redirect unauthenticated users trying to access dashboard or admin
+    if (
+      !user &&
+      (request.nextUrl.pathname.startsWith("/dashboard") ||
+       request.nextUrl.pathname.startsWith("/admin"))
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/login"
+      return NextResponse.redirect(url)
+    }
 
-  // Redirect authenticated users away from auth pages
-  if (
-    user &&
-    (request.nextUrl.pathname.startsWith("/login") ||
-      request.nextUrl.pathname.startsWith("/register"))
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/dashboard"
-    return NextResponse.redirect(url)
+    // Redirect authenticated users away from auth pages
+    if (
+      user &&
+      (request.nextUrl.pathname.startsWith("/login") ||
+        request.nextUrl.pathname.startsWith("/register"))
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/dashboard"
+      return NextResponse.redirect(url)
+    }
+  } catch (error) {
+    console.error('[v0] Middleware: Auth check failed:', error)
+    // If auth fails and trying to access protected routes, redirect to login
+    if (
+      request.nextUrl.pathname.startsWith("/dashboard") ||
+      request.nextUrl.pathname.startsWith("/admin")
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/login"
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
