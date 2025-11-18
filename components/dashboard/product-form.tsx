@@ -20,6 +20,7 @@ import { getCurrentCompanyClient } from '@/lib/auth/current-company-client'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
+import { Currency, CURRENCY_LABELS } from '@/lib/utils/currency'
 
 interface ProductFormProps {
   initialData?: {
@@ -74,7 +75,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     customsStatus: 'Not cleared',
     cropYear: new Date().getFullYear().toString(),
     packaging: '',
-    currency: 'USD',
+    currency: 'EUR' as Currency,
     harvestDate: initialData?.harvestDate || '',
     shelfLife: initialData?.shelfLife || '',
   })
@@ -191,6 +192,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         crop_year: formData.cropYear,
         packaging: formData.packaging,
         status: status,
+        currency: formData.currency,
         ...(isFreshProduce && {
           harvest_date: formData.harvestDate,
           shelf_life: formData.shelfLife,
@@ -454,6 +456,26 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency *</Label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value: Currency) => setFormData({ ...formData, currency: value })}
+                required
+              >
+                <SelectTrigger id="currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EUR">{CURRENCY_LABELS.EUR}</SelectItem>
+                  <SelectItem value="USD">{CURRENCY_LABELS.USD}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                EUR recommended for European markets
+              </p>
             </div>
 
             <div className="space-y-2">

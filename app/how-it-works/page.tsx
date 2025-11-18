@@ -689,4 +689,48 @@ export default function HowItWorksPage() {
 
               <Card className="p-6">
                 <div className="flex justify-center mb-4">
-                  <div className
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFB84D]/10">
+                    <Coffee className="h-7 w-7 text-[#FFB84D]" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-center mb-3">Food Manufacturers</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Find bulk ingredients</li>
+                  <li>• Ensure supply chain quality</li>
+                  <li>• Access certified products</li>
+                </ul>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="bg-muted/30 py-20 md:py-28">
+          <div className="container">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-4xl font-bold md:text-5xl mb-6">
+                Ready to get started?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-10">
+                Join the trusted B2B marketplace for verified food businesses
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild size="lg" className="bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold text-lg px-8 py-6 h-auto">
+                  <Link href="/register/supplier">
+                    Register as Supplier <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" className="bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold text-lg px-8 py-6 h-auto">
+                  <Link href="/register/buyer">
+                    Register as Buyer <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  )
+}

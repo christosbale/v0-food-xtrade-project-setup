@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { RequestQuoteModal } from '@/components/products/request-quote-modal'
 import { Search, Filter, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
+import { formatPrice, type Currency } from '@/lib/utils/currency'
 
 const CATEGORIES = ['Nuts', 'Coffee', 'Cocoa', 'Dried Fruits', 'Spices', 'Grains', 'Seeds', 'Oils', 'Other']
 const CUSTOMS_STATUS = ['EU customs cleared', 'US customs cleared', 'Bonded warehouse', 'Origin country only']
@@ -30,6 +31,7 @@ interface Product {
   available_quantity: number
   unit: string
   price_per_unit: number
+  currency?: string
   incoterm: string
   customs_status: string
   crop_year: string | null
@@ -338,7 +340,7 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Price:</span>
                           <span className="font-bold text-lg">
-                            ${product.price_per_unit.toLocaleString()} / {product.unit}
+                            {formatPrice(product.price_per_unit, (product.currency || 'EUR') as Currency)} / {product.unit}
                           </span>
                         </div>
 

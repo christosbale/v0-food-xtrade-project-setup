@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building2, MapPin, Package, DollarSign, FileCheck, ShieldCheck, ArrowLeft, Globe, MessageSquare } from 'lucide-react'
 import { RFQForm } from '@/components/products/rfq-form'
 import { createClient } from '@/lib/supabase/server'
+import { formatPriceWithConversion, type Currency } from '@/lib/utils/currency'
 
 async function getProduct(id: string) {
   const supabase = createClient()
@@ -70,7 +71,11 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     origin: product.origin_country,
     availableQuantity: product.available_quantity,
     unit: product.unit,
-    priceRange: `$${product.price_per_unit}`,
+    priceRange: formatPriceWithConversion(
+      product.price_per_unit, 
+      (product.currency || 'EUR') as Currency,
+      true
+    ),
     customsStatus: product.customs_status || 'Not specified',
     certifications: product.certifications || [],
     supplier: supplier,
@@ -166,7 +171,13 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                 <DollarSign className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm text-muted-foreground">Price</p>
-                  <p className="font-medium">${product.price_per_unit} per {product.unit}</p>
+                  <p className="font-medium">
+                    {formatPriceWithConversion(
+                      product.price_per_unit,
+                      (product.currency || 'EUR') as Currency,
+                      true
+                    )} per {product.unit}
+                  </p>
                 </div>
               </div>
 
