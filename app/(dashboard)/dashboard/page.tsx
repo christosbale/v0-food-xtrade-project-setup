@@ -102,24 +102,24 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-10">
-      <div className="flex items-start justify-between gap-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-lg text-muted-foreground">
+    <div className="mx-auto max-w-7xl space-y-16 px-6">
+      <div className="flex items-start justify-between gap-8">
+        <div className="space-y-4">
+          <h1 className="text-5xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
             Welcome back! Here's your business overview
           </p>
         </div>
         {company && company.company_type === 'supplier' && (
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold text-base px-8 py-6 h-auto">
             <Link href="/dashboard/products/new">
-              <Package className="mr-2 h-5 w-5" />
+              <Package className="mr-3 h-5 w-5" />
               Add Product
             </Link>
           </Button>
         )}
         {company && company.company_type === 'buyer' && (
-          <Button asChild variant="outline" size="lg">
+          <Button asChild variant="outline" size="lg" className="font-bold text-base px-8 py-6 h-auto border-2">
             <Link href="/dashboard/upgrade">
               Become a Supplier
             </Link>
@@ -127,119 +127,119 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold">Total Products</CardTitle>
-            <Package className="h-6 w-6 text-muted-foreground" />
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white border border-border p-8">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 p-0">
+            <CardTitle className="text-lg font-bold">Total Products</CardTitle>
+            <Package className="h-7 w-7 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">{stats.totalProducts}</div>
-            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+          <CardContent className="p-0 pt-6">
+            <div className="text-5xl font-bold">{stats.totalProducts}</div>
+            <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
               <span>+12% from last month</span>
             </p>
           </CardContent>
         </Card>
         
-        <Card className="border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold">Active RFQs</CardTitle>
-            <ShoppingCart className="h-6 w-6 text-muted-foreground" />
+        <Card className="bg-white border border-border p-8">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 p-0">
+            <CardTitle className="text-lg font-bold">Active RFQs</CardTitle>
+            <ShoppingCart className="h-7 w-7 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">{stats.activeRFQs}</div>
-            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+          <CardContent className="p-0 pt-6">
+            <div className="text-5xl font-bold">{stats.activeRFQs}</div>
+            <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
               <span>+8% from last month</span>
             </p>
           </CardContent>
         </Card>
         
-        <Card className="border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold">Monthly Revenue</CardTitle>
-            <TrendingUp className="h-6 w-6 text-muted-foreground" />
+        <Card className="bg-white border border-border p-8">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 p-0">
+            <CardTitle className="text-lg font-bold">Monthly Revenue</CardTitle>
+            <TrendingUp className="h-7 w-7 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">${(stats.monthlyRevenue / 1000).toFixed(0)}k</div>
-            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+          <CardContent className="p-0 pt-6">
+            <div className="text-5xl font-bold">${(stats.monthlyRevenue / 1000).toFixed(0)}k</div>
+            <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
               <span>+15% from last month</span>
             </p>
           </CardContent>
         </Card>
         
-        <Card className="border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold">New Buyers</CardTitle>
-            <Users className="h-6 w-6 text-muted-foreground" />
+        <Card className="bg-white border border-border p-8">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 p-0">
+            <CardTitle className="text-lg font-bold">New Buyers</CardTitle>
+            <Users className="h-7 w-7 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">{stats.newBuyers}</div>
-            <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+          <CardContent className="p-0 pt-6">
+            <div className="text-5xl font-bold">{stats.newBuyers}</div>
+            <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
               <span>+20% from last month</span>
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-2">
-          <CardHeader className="space-y-2 pb-6">
-            <CardTitle className="text-2xl">Recent RFQs</CardTitle>
-            <CardDescription className="text-base">Latest quote requests from buyers</CardDescription>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <Card className="bg-white border border-border p-10">
+          <CardHeader className="space-y-3 pb-8 p-0">
+            <CardTitle className="text-3xl font-bold">Recent RFQs</CardTitle>
+            <CardDescription className="text-base leading-relaxed">Latest quote requests from buyers</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5 p-0">
             {recentRFQs.map((rfq) => (
-              <div key={rfq.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                <div className="space-y-1">
-                  <p className="font-semibold">{rfq.title}</p>
+              <div key={rfq.id} className="flex items-center justify-between p-6 rounded-sm border hover:bg-muted/30 transition-colors">
+                <div className="space-y-2">
+                  <p className="font-bold text-base">{rfq.title}</p>
                   <p className="text-sm text-muted-foreground">{rfq.buyer}</p>
                 </div>
-                <div className="text-right space-y-1">
-                  <Badge variant={rfq.status === 'responded' ? 'secondary' : 'outline'}>
+                <div className="text-right space-y-2">
+                  <Badge variant={rfq.status === 'responded' ? 'default' : 'outline'} className="font-semibold">
                     {rfq.status}
                   </Badge>
                   <p className="text-xs text-muted-foreground">{rfq.date}</p>
                 </div>
               </div>
             ))}
-            <Button asChild variant="outline" className="w-full mt-4" size="lg">
+            <Button asChild variant="outline" className="w-full mt-6 font-bold border-2" size="lg">
               <Link href="/dashboard/rfqs">
                 View All RFQs
-                <ArrowUpRight className="ml-2 h-4 w-4" />
+                <ArrowUpRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="border-2">
-          <CardHeader className="space-y-2 pb-6">
-            <CardTitle className="text-2xl">Quick Actions</CardTitle>
-            <CardDescription className="text-base">Common tasks and shortcuts</CardDescription>
+        <Card className="bg-white border border-border p-10">
+          <CardHeader className="space-y-3 pb-8 p-0">
+            <CardTitle className="text-3xl font-bold">Quick Actions</CardTitle>
+            <CardDescription className="text-base leading-relaxed">Common tasks and shortcuts</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <Button asChild className="w-full justify-start" variant="outline" size="lg">
+          <CardContent className="space-y-4 p-0">
+            <Button asChild className="w-full justify-start bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold" size="lg">
               <Link href="/dashboard/products/new">
                 <Package className="mr-3 h-5 w-5" />
                 Add New Product
               </Link>
             </Button>
-            <Button asChild className="w-full justify-start" variant="outline" size="lg">
+            <Button asChild className="w-full justify-start border-2 font-bold" variant="outline" size="lg">
               <Link href="/dashboard/rfqs">
                 <ShoppingCart className="mr-3 h-5 w-5" />
                 Browse RFQs
               </Link>
             </Button>
-            <Button asChild className="w-full justify-start" variant="outline" size="lg">
+            <Button asChild className="w-full justify-start border-2 font-bold" variant="outline" size="lg">
               <Link href="/dashboard/messages">
                 <MessageSquare className="mr-3 h-5 w-5" />
                 Check Messages
               </Link>
             </Button>
-            <Button asChild className="w-full justify-start" variant="outline" size="lg">
+            <Button asChild className="w-full justify-start border-2 font-bold" variant="outline" size="lg">
               <Link href="/dashboard/analytics">
                 <BarChart3 className="mr-3 h-5 w-5" />
                 View Analytics

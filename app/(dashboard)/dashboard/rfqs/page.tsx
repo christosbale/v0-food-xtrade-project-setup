@@ -175,7 +175,7 @@ export default function RFQsPage() {
   const getStatusColor = (status: RFQStatus) => {
     switch (status) {
       case 'new':
-        return 'bg-lime-500/10 text-lime-600 border-lime-500/20'
+        return 'bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/20'
       case 'in_discussion':
         return 'bg-blue-500/10 text-blue-600 border-blue-500/20'
       case 'closed':
@@ -210,7 +210,7 @@ export default function RFQsPage() {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-lime-500" />
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#FFB84D]" />
           <p className="mt-4 text-sm text-muted-foreground">Loading RFQs...</p>
         </div>
       </div>
@@ -408,7 +408,7 @@ export default function RFQsPage() {
 
                 {/* Reply Button */}
                 <Button
-                  className="w-full bg-lime-500 text-black hover:bg-lime-600"
+                  className="w-full bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold"
                   size="lg"
                   asChild
                 >

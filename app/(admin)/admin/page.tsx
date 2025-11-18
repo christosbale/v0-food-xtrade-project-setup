@@ -34,88 +34,86 @@ export default async function AdminDashboardPage() {
     .limit(5)
 
   return (
-    <div className="space-y-10">
-      <div className="space-y-2">
-        <h2 className="text-4xl font-bold tracking-tight">Admin Dashboard</h2>
-        <p className="text-lg text-muted-foreground">
+    <div className="mx-auto max-w-7xl space-y-16 px-6">
+      <div className="space-y-4">
+        <h2 className="text-5xl font-bold tracking-tight">Admin Dashboard</h2>
+        <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl">
           Overview of company verifications and platform activity
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold">
+      <div className="grid gap-8 md:grid-cols-3">
+        <Card className="bg-white border border-border p-10">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 p-0">
+            <CardTitle className="text-lg font-bold">
               Pending Verifications
             </CardTitle>
-            <Clock className="h-6 w-6 text-orange-500" />
+            <Clock className="h-7 w-7 text-orange-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">{pendingCount}</div>
-            <p className="text-sm text-muted-foreground mt-2">
+          <CardContent className="p-0 pt-6">
+            <div className="text-5xl font-bold">{pendingCount}</div>
+            <p className="text-sm text-muted-foreground mt-4">
               Companies awaiting review
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold">
+        <Card className="bg-white border border-border p-10">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 p-0">
+            <CardTitle className="text-lg font-bold">
               Verified Companies
             </CardTitle>
-            <CheckCircle2 className="h-6 w-6 text-green-500" />
+            <CheckCircle2 className="h-7 w-7 text-green-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">{verifiedCount}</div>
-            <p className="text-sm text-muted-foreground mt-2">
+          <CardContent className="p-0 pt-6">
+            <div className="text-5xl font-bold">{verifiedCount}</div>
+            <p className="text-sm text-muted-foreground mt-4">
               Active verified suppliers
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base font-semibold">
+        <Card className="bg-white border border-border p-10">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6 p-0">
+            <CardTitle className="text-lg font-bold">
               Rejected Companies
             </CardTitle>
-            <XCircle className="h-6 w-6 text-red-500" />
+            <XCircle className="h-7 w-7 text-red-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">{rejectedCount}</div>
-            <p className="text-sm text-muted-foreground mt-2">
+          <CardContent className="p-0 pt-6">
+            <div className="text-5xl font-bold">{rejectedCount}</div>
+            <p className="text-sm text-muted-foreground mt-4">
               Requiring more information
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Latest Pending Companies */}
-      <Card className="border-2">
-        <CardHeader className="space-y-2 pb-6">
-          <CardTitle className="text-2xl">Latest Pending Companies</CardTitle>
-          <CardDescription className="text-base">
+      <Card className="bg-white border border-border p-12">
+        <CardHeader className="space-y-3 pb-10 p-0">
+          <CardTitle className="text-3xl font-bold">Latest Pending Companies</CardTitle>
+          <CardDescription className="text-base leading-relaxed">
             Most recent supplier registrations awaiting verification
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {latestPendingCompanies && latestPendingCompanies.length > 0 ? (
             <>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-base">Company Name</TableHead>
-                    <TableHead className="text-base">Country</TableHead>
-                    <TableHead className="text-base">Submitted</TableHead>
-                    <TableHead className="text-right text-base">Action</TableHead>
+                  <TableRow className="border-b-2">
+                    <TableHead className="text-base font-bold h-14">Company Name</TableHead>
+                    <TableHead className="text-base font-bold">Country</TableHead>
+                    <TableHead className="text-base font-bold">Submitted</TableHead>
+                    <TableHead className="text-right text-base font-bold">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {latestPendingCompanies.map((company) => (
-                    <TableRow key={company.id} className="h-16">
-                      <TableCell className="font-semibold">{company.company_name}</TableCell>
-                      <TableCell>{company.country}</TableCell>
-                      <TableCell>
+                    <TableRow key={company.id} className="h-20 hover:bg-muted/20">
+                      <TableCell className="font-bold text-base">{company.company_name}</TableCell>
+                      <TableCell className="text-base">{company.country}</TableCell>
+                      <TableCell className="text-base">
                         {new Date(company.created_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -126,7 +124,7 @@ export default async function AdminDashboardPage() {
                       <TableCell className="text-right">
                         <Button
                           size="default"
-                          variant="outline"
+                          className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold"
                           asChild
                         >
                           <Link href={`/admin/companies/${company.id}`}>
@@ -139,8 +137,8 @@ export default async function AdminDashboardPage() {
                 </TableBody>
               </Table>
               
-              <div className="mt-6 text-center">
-                <Button variant="outline" size="lg" asChild>
+              <div className="mt-10 text-center">
+                <Button variant="outline" size="lg" className="font-bold border-2 px-8" asChild>
                   <Link href="/admin/companies/pending">
                     View All Pending Companies
                   </Link>
@@ -148,7 +146,7 @@ export default async function AdminDashboardPage() {
               </div>
             </>
           ) : (
-            <p className="text-center text-muted-foreground py-12 text-base">
+            <p className="text-center text-muted-foreground py-16 text-lg">
               No pending companies at the moment
             </p>
           )}

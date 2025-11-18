@@ -44,8 +44,8 @@ export function ForgotPasswordForm() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center text-center space-y-4">
-            <div className="rounded-full bg-lime-100 p-3">
-              <CheckCircle className="h-8 w-8 text-lime-600" />
+            <div className="rounded-full bg-[#FFB84D]/10 p-3">
+              <CheckCircle className="h-8 w-8 text-[#FFB84D]" />
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold text-lg">Check Your Email</h3>

@@ -13,25 +13,25 @@ export default function HowItWorksPage() {
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-black py-20 md:py-28">
+        <section className="relative overflow-hidden bg-muted py-20 md:py-28">
           <div className="container relative z-10">
             <div className="mx-auto max-w-4xl text-center">
-              <h1 className="text-5xl font-bold text-white md:text-6xl lg:text-7xl">
+              <h1 className="text-5xl font-bold text-black md:text-6xl lg:text-7xl">
                 How foodXtrade works
               </h1>
-              <p className="mt-6 text-xl text-white/80 leading-relaxed max-w-3xl mx-auto">
+              <p className="mt-6 text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
                 A subscription-based B2B marketplace connecting verified food suppliers 
                 and buyers through transparent offers, documentation and RFQs.
               </p>
               
               <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
-                <Badge variant="secondary" className="bg-white/10 text-white border-white/20 text-sm px-4 py-2">
+                <Badge variant="secondary" className="bg-white text-black border-border text-sm px-4 py-2">
                   B2B only
                 </Badge>
-                <Badge variant="secondary" className="bg-[#9FE870]/10 text-[#9FE870] border-[#9FE870]/20 text-sm px-4 py-2">
+                <Badge variant="secondary" className="bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/20 text-sm px-4 py-2">
                   Verified companies
                 </Badge>
-                <Badge variant="secondary" className="bg-white/10 text-white border-white/20 text-sm px-4 py-2">
+                <Badge variant="secondary" className="bg-white text-black border-border text-sm px-4 py-2">
                   Global food ingredients
                 </Badge>
               </div>
@@ -40,7 +40,7 @@ export default function HowItWorksPage() {
                 <Button 
                   asChild 
                   size="lg"
-                  className="bg-[#9FE870] text-black hover:bg-[#8DD65F] font-semibold text-lg px-8 py-6 h-auto transition-all hover:scale-105"
+                  className="bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold text-lg px-8 py-6 h-auto transition-all hover:scale-105"
                 >
                   <Link href="/suppliers">
                     I'm a supplier <ArrowRight className="ml-2 h-5 w-5" />
@@ -49,7 +49,7 @@ export default function HowItWorksPage() {
                 <Button 
                   asChild 
                   size="lg"
-                  className="bg-[#9FE870] text-black hover:bg-[#8DD65F] font-semibold text-lg px-8 py-6 h-auto transition-all hover:scale-105"
+                  className="bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold text-lg px-8 py-6 h-auto transition-all hover:scale-105"
                 >
                   <Link href="/buyers">
                     I'm a buyer <ArrowRight className="ml-2 h-5 w-5" />
@@ -60,14 +60,14 @@ export default function HowItWorksPage() {
               <div className="mt-6">
                 <Link 
                   href="/products"
-                  className="text-[#9FE870] hover:text-[#8DD65F] font-medium inline-flex items-center gap-2 transition-colors"
+                  className="text-[#FFB84D] hover:text-[#FFA62F] font-medium inline-flex items-center gap-2 transition-colors"
                 >
                   Browse the market <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
           </div>
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:4rem_4rem]" />
         </section>
 
         {/* The Big Picture Section */}
@@ -104,7 +104,7 @@ export default function HowItWorksPage() {
               <Card className="p-8 border-2">
                 <div className="space-y-8">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#9FE870]/10 text-[#9FE870]">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D]/10 text-[#FFB84D]">
                       <Package className="h-6 w-6" />
                     </div>
                     <div>
@@ -120,7 +120,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#9FE870]/10 text-[#9FE870]">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D]/10 text-[#FFB84D]">
                       <Search className="h-6 w-6" />
                     </div>
                     <div>
@@ -136,7 +136,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#9FE870]/10 text-[#9FE870]">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D]/10 text-[#FFB84D]">
                       <MessageSquare className="h-6 w-6" />
                     </div>
                     <div>
@@ -159,15 +159,15 @@ export default function HowItWorksPage() {
               {/* Left: For Suppliers */}
               <Card className="p-8 lg:p-10">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#9FE870]/10">
-                    <Building2 className="h-6 w-6 text-[#9FE870]" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#FFB84D]/10">
+                    <Building2 className="h-6 w-6 text-[#FFB84D]" />
                   </div>
                   <h2 className="text-3xl font-bold">For Suppliers</h2>
                 </div>
 
                 <div className="space-y-6">
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       1
                     </div>
                     <div>
@@ -179,7 +179,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       2
                     </div>
                     <div>
@@ -191,7 +191,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       3
                     </div>
                     <div>
@@ -204,7 +204,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       4
                     </div>
                     <div>
@@ -216,7 +216,7 @@ export default function HowItWorksPage() {
                   </div>
                 </div>
 
-                <Button asChild className="w-full mt-8 bg-black text-white hover:bg-gray-900" size="lg">
+                <Button asChild className="w-full mt-8 bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold" size="lg">
                   <Link href="/suppliers">
                     Learn more for suppliers <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -226,15 +226,15 @@ export default function HowItWorksPage() {
               {/* Right: For Buyers */}
               <Card className="p-8 lg:p-10">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#9FE870]/10">
-                    <ShoppingCart className="h-6 w-6 text-[#9FE870]" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#FFB84D]/10">
+                    <ShoppingCart className="h-6 w-6 text-[#FFB84D]" />
                   </div>
                   <h2 className="text-3xl font-bold">For Buyers</h2>
                 </div>
 
                 <div className="space-y-6">
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       1
                     </div>
                     <div>
@@ -246,7 +246,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       2
                     </div>
                     <div>
@@ -259,7 +259,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       3
                     </div>
                     <div>
@@ -271,7 +271,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-black text-white font-bold">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#FFB84D] text-black font-bold">
                       4
                     </div>
                     <div>
@@ -283,7 +283,7 @@ export default function HowItWorksPage() {
                   </div>
                 </div>
 
-                <Button asChild className="w-full mt-8 bg-black text-white hover:bg-gray-900" size="lg">
+                <Button asChild className="w-full mt-8 bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold" size="lg">
                   <Link href="/buyers">
                     Learn more for buyers <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -297,11 +297,11 @@ export default function HowItWorksPage() {
         <section className="py-20 md:py-28">
           <div className="container">
             <div className="mx-auto max-w-5xl">
-              <Card className="p-8 lg:p-12 border-2 border-[#9FE870]/20 bg-gradient-to-br from-white to-[#9FE870]/5">
+              <Card className="p-8 lg:p-12 border-2 border-[#FFB84D]/20 bg-gradient-to-br from-white to-[#FFB84D]/5">
                 <div className="grid gap-8 lg:grid-cols-[1fr,auto] items-center">
                   <div>
                     <div className="flex items-center gap-3 mb-6">
-                      <Shield className="h-10 w-10 text-[#9FE870]" />
+                      <Shield className="h-10 w-10 text-[#FFB84D]" />
                       <h2 className="text-3xl font-bold">Verified companies only</h2>
                     </div>
 
@@ -322,19 +322,19 @@ export default function HowItWorksPage() {
 
                     <div className="mt-8 grid gap-4 sm:grid-cols-3">
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-white border">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#9FE870]/10 text-[#9FE870] font-bold text-sm">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFB84D]/10 text-[#FFB84D] font-bold text-sm">
                           1
                         </div>
                         <span className="text-sm font-medium">Submit documents</span>
                       </div>
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-white border">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#9FE870]/10 text-[#9FE870] font-bold text-sm">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFB84D]/10 text-[#FFB84D] font-bold text-sm">
                           2
                         </div>
                         <span className="text-sm font-medium">Review</span>
                       </div>
                       <div className="flex items-center gap-3 p-4 rounded-lg bg-white border">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#9FE870]/10 text-[#9FE870] font-bold text-sm">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FFB84D]/10 text-[#FFB84D] font-bold text-sm">
                           3
                         </div>
                         <span className="text-sm font-medium">Verified / Info needed</span>
@@ -343,7 +343,7 @@ export default function HowItWorksPage() {
                   </div>
 
                   <div className="flex justify-center lg:justify-end">
-                    <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#9FE870] text-black font-bold text-lg border-4 border-white shadow-xl">
+                    <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#FFB84D] text-black font-bold text-lg border-4 border-white shadow-xl">
                       <CheckCircle className="h-6 w-6" />
                       Verified Supplier
                     </div>
@@ -368,28 +368,28 @@ export default function HowItWorksPage() {
               {/* Left: Text blocks */}
               <div className="space-y-6 text-lg">
                 <div className="flex gap-4">
-                  <Package className="h-6 w-6 text-[#9FE870] flex-shrink-0 mt-1" />
+                  <Package className="h-6 w-6 text-[#FFB84D] flex-shrink-0 mt-1" />
                   <p>
                     <strong className="text-foreground">Bulk product listings</strong> with 
                     quantities, crop year, origin country and packaging details.
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <MapPin className="h-6 w-6 text-[#9FE870] flex-shrink-0 mt-1" />
+                  <MapPin className="h-6 w-6 text-[#FFB84D] flex-shrink-0 mt-1" />
                   <p>
                     <strong className="text-foreground">Customs & logistics fields:</strong> EU-cleared, 
                     US-cleared, bonded warehouse, or origin-only to help buyers understand import requirements.
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <TrendingUp className="h-6 w-6 text-[#9FE870] flex-shrink-0 mt-1" />
+                  <TrendingUp className="h-6 w-6 text-[#FFB84D] flex-shrink-0 mt-1" />
                   <p>
                     <strong className="text-foreground">Price ranges and Incoterms</strong> to set 
                     expectations and facilitate transparent negotiations.
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <FileText className="h-6 w-6 text-[#9FE870] flex-shrink-0 mt-1" />
+                  <FileText className="h-6 w-6 text-[#FFB84D] flex-shrink-0 mt-1" />
                   <p>
                     <strong className="text-foreground">Certification tags</strong> like Organic, 
                     Fair Trade, HACCP, ISO to highlight quality standards.
@@ -433,18 +433,18 @@ export default function HowItWorksPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge className="bg-[#9FE870]/10 text-[#9FE870] border-[#9FE870]/20">
+                  <Badge className="bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/20">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Verified Supplier
                   </Badge>
                   <Badge variant="outline">Organic</Badge>
                   <Badge variant="outline">Fair Trade</Badge>
-                  <Badge className="bg-[#9FE870]/10 text-[#9FE870] border-[#9FE870]/20">
+                  <Badge className="bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/20">
                     Origin-only
                   </Badge>
                 </div>
 
-                <Button className="w-full bg-black text-white hover:bg-gray-900">
+                <Button className="w-full bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold">
                   Request quote
                 </Button>
               </Card>
@@ -465,8 +465,8 @@ export default function HowItWorksPage() {
             <div className="grid gap-8 md:grid-cols-3 mb-12">
               <Card className="p-6 text-center">
                 <div className="flex justify-center mb-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#9FE870]/10">
-                    <Search className="h-8 w-8 text-[#9FE870]" />
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFB84D]/10">
+                    <Search className="h-8 w-8 text-[#FFB84D]" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Step 1: Buyer finds a product</h3>
@@ -478,8 +478,8 @@ export default function HowItWorksPage() {
 
               <Card className="p-6 text-center">
                 <div className="flex justify-center mb-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#9FE870]/10">
-                    <Send className="h-8 w-8 text-[#9FE870]" />
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFB84D]/10">
+                    <Send className="h-8 w-8 text-[#FFB84D]" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Step 2: Buyer sends RFQ</h3>
@@ -491,8 +491,8 @@ export default function HowItWorksPage() {
 
               <Card className="p-6 text-center">
                 <div className="flex justify-center mb-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#9FE870]/10">
-                    <MessageSquare className="h-8 w-8 text-[#9FE870]" />
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFB84D]/10">
+                    <MessageSquare className="h-8 w-8 text-[#FFB84D]" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Step 3: Supplier responds</h3>
@@ -540,7 +540,7 @@ export default function HowItWorksPage() {
                 </Card>
               </div>
 
-              <Card className="p-6 bg-[#9FE870]/5 border-[#9FE870]/20">
+              <Card className="p-6 bg-[#FFB84D]/5 border-[#FFB84D]/20">
                 <p className="text-lg text-center">
                   <strong className="text-foreground">No random spam:</strong> only verified B2B 
                   participants can access the platform, ensuring quality interactions.
@@ -556,22 +556,22 @@ export default function HowItWorksPage() {
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Up to 10 products</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Standard listing visibility</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Basic RFQ management</span>
                   </li>
                 </ul>
               </Card>
 
-              <Card className="p-6 border-[#9FE870] border-2 relative">
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#9FE870] text-black">
+              <Card className="p-6 border-[#FFB84D] border-2 relative">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#FFB84D] text-black">
                   Most Popular
                 </Badge>
                 <div className="text-center mb-4">
@@ -580,19 +580,19 @@ export default function HowItWorksPage() {
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Up to 50 products</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Enhanced visibility</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Priority support</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Analytics dashboard</span>
                   </li>
                 </ul>
@@ -605,19 +605,19 @@ export default function HowItWorksPage() {
                 </div>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Unlimited listings</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Sponsored placements</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>Priority support</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870] flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D] flex-shrink-0 mt-0.5" />
                     <span>API access</span>
                   </li>
                 </ul>
@@ -625,7 +625,7 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="text-center">
-              <Button asChild size="lg" className="bg-black text-white hover:bg-gray-900">
+              <Button asChild size="lg" className="bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold">
                 <Link href="/pricing">
                   See full pricing <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -647,8 +647,8 @@ export default function HowItWorksPage() {
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               <Card className="p-6">
                 <div className="flex justify-center mb-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#9FE870]/10">
-                    <TrendingUp className="h-7 w-7 text-[#9FE870]" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFB84D]/10">
+                    <TrendingUp className="h-7 w-7 text-[#FFB84D]" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3">Exporters & Traders</h3>
@@ -661,8 +661,8 @@ export default function HowItWorksPage() {
 
               <Card className="p-6">
                 <div className="flex justify-center mb-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#9FE870]/10">
-                    <Factory className="h-7 w-7 text-[#9FE870]" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFB84D]/10">
+                    <Factory className="h-7 w-7 text-[#FFB84D]" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3">Processors & Packers</h3>
@@ -675,8 +675,8 @@ export default function HowItWorksPage() {
 
               <Card className="p-6">
                 <div className="flex justify-center mb-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#9FE870]/10">
-                    <Users className="h-7 w-7 text-[#9FE870]" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFB84D]/10">
+                    <Users className="h-7 w-7 text-[#FFB84D]" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3">Importers & Distributors</h3>
@@ -689,68 +689,4 @@ export default function HowItWorksPage() {
 
               <Card className="p-6">
                 <div className="flex justify-center mb-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#9FE870]/10">
-                    <Coffee className="h-7 w-7 text-[#9FE870]" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold text-center mb-3">Roasters & Manufacturers</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Find quality ingredients</li>
-                  <li>• Direct supplier contact</li>
-                  <li>• Better sourcing deals</li>
-                </ul>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Final CTA Band */}
-        <section className="relative overflow-hidden bg-black py-20 md:py-28">
-          <div className="container relative z-10">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-4xl font-bold text-white md:text-5xl">
-                Ready to see foodXtrade in action?
-              </h2>
-              <p className="mt-4 text-xl text-white/80">
-                Browse the live market or start your account as a buyer or supplier.
-              </p>
-
-              <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button 
-                  asChild 
-                  size="lg"
-                  className="bg-[#9FE870] text-black hover:bg-[#8DD65F] font-semibold text-lg px-8 py-6 h-auto transition-all hover:scale-105"
-                >
-                  <Link href="/products">
-                    Browse the market <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button 
-                  asChild 
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-white bg-transparent text-white hover:bg-white/10 font-semibold text-lg px-8 py-6 h-auto"
-                >
-                  <Link href="/suppliers">
-                    Start as a supplier
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="mt-6">
-                <Link 
-                  href="/buyers"
-                  className="text-[#9FE870] hover:text-[#8DD65F] font-medium inline-flex items-center gap-2 transition-colors"
-                >
-                  For buyers <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-        </section>
-      </main>
-      <SiteFooter />
-    </div>
-  )
-}
+                  <div className

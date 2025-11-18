@@ -80,30 +80,24 @@ export function DashboardSidebar() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-[64px] z-30 h-[calc(100vh-64px)] w-72 border-r bg-sidebar transition-transform duration-300 lg:sticky lg:translate-x-0',
+          'fixed left-0 top-[64px] z-30 h-[calc(100vh-64px)] w-80 border-r bg-white transition-transform duration-300 lg:sticky lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <nav className="flex h-full flex-col gap-2 p-6">
+        <nav className="flex h-full flex-col gap-3 p-12">
           {isAdmin && (
             <>
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-4 py-3.5 text-sm font-semibold transition-all border-2',
-                  pathname?.startsWith('/admin')
-                    ? 'bg-secondary text-secondary-foreground shadow-sm'
-                    : 'border-secondary text-secondary hover:bg-secondary/10 hover:shadow-sm'
-                )}
+                className="flex items-center gap-4 rounded-sm bg-secondary px-6 py-5 text-base font-bold text-secondary-foreground transition-all hover:bg-secondary/90 hover:shadow-lg"
               >
-                <ShieldCheck className="h-5 w-5" />
+                <ShieldCheck className="h-6 w-6" />
                 Admin Panel
               </Link>
-              <div className="h-px bg-border my-3" />
+              <div className="h-px bg-border my-6" />
             </>
           )}
           
@@ -117,13 +111,13 @@ export function DashboardSidebar() {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all',
+                  'flex items-center gap-4 rounded-sm px-6 py-5 text-base font-semibold transition-all',
                   isActive
-                    ? 'bg-secondary text-secondary-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground hover:bg-muted'
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-6 w-6" />
                 {item.title}
               </Link>
             )

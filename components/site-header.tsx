@@ -9,66 +9,61 @@ import {
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-primary-foreground/10 bg-primary backdrop-blur supports-[backdrop-filter]:bg-primary/95">
-      <div className="container flex h-20 items-center justify-between">
-        <div className="flex items-center gap-10">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold tracking-tight text-primary-foreground">
-              food<span className="text-accent">X</span>trade
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-white backdrop-blur">
+      <div className="mx-auto max-w-[1280px] flex h-18 items-center justify-between px-6 md:px-10">
+        <div className="flex items-center gap-16">
+          <Link href="/" className="flex items-center">
+            <span className="text-2xl md:text-3xl font-bold tracking-tight text-black">
+              food<span className="text-[#FFD500]">X</span>trade
             </span>
           </Link>
           
           <nav className="hidden items-center gap-8 md:flex">
             <Link
               href="/products"
-              className="group relative text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
             >
               Products
-              <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-accent transition-all group-hover:w-full" />
             </Link>
             <Link
               href="/buyers"
-              className="group relative text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
             >
               For Buyers
-              <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-accent transition-all group-hover:w-full" />
             </Link>
             <Link
               href="/suppliers"
-              className="group relative text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
             >
               For Suppliers
-              <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-accent transition-all group-hover:w-full" />
             </Link>
             <Link
               href="/how-it-works"
-              className="group relative text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
             >
               How It Works
-              <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-accent transition-all group-hover:w-full" />
             </Link>
             <Link
               href="/pricing"
-              className="group relative text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
             >
               Pricing
-              <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-accent transition-all group-hover:w-full" />
             </Link>
           </nav>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-4 md:flex">
             <Link href="/login">
               <Button 
                 variant="ghost" 
-                className="text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                className="text-title-medium font-medium text-black hover:bg-muted"
               >
                 Log In
               </Button>
             </Link>
             <Link href="/register">
-              <Button className="bg-accent text-accent-foreground font-semibold hover:bg-accent/90 shadow-lg shadow-accent/20">
+              <Button className="bg-[#FFD500] text-black font-medium hover:bg-[#FFD500]/90 text-title-medium h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all">
                 Get Started
               </Button>
             </Link>

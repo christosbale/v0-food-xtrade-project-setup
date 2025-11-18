@@ -10,26 +10,26 @@ export default function HomePage() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <section className="relative overflow-hidden bg-black py-20 md:py-32">
+        <section className="relative overflow-hidden bg-white py-20 md:py-32">
           <div className="container relative z-10">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
               {/* Left side: Text + CTAs */}
               <div>
-                <h1 className="text-5xl font-bold text-balance text-white md:text-6xl lg:text-7xl leading-tight">
+                <h1 className="text-5xl font-bold text-balance text-black md:text-6xl lg:text-7xl leading-tight">
                   B2B Food Trading{' '}
                   <span className="relative inline-block">
-                    <span className="text-[#9FE870]">Built for Scale</span>
-                    <span className="absolute bottom-1 left-0 h-1 w-full bg-[#9FE870]"></span>
+                    <span className="text-[#FFB84D]">Built for Scale</span>
+                    <span className="absolute bottom-1 left-0 h-1 w-full bg-[#FFB84D]"></span>
                   </span>
                 </h1>
-                <p className="mt-6 text-xl text-balance text-white/80 leading-relaxed max-w-xl">
+                <p className="mt-6 text-xl text-balance text-muted-foreground leading-relaxed max-w-xl">
                   Connect verified suppliers with qualified buyers. No consumers. No hobbyists. Professional companies only.
                 </p>
                 <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row">
                   <Button 
                     asChild 
                     size="lg" 
-                    className="w-full sm:w-auto bg-[#9FE870] text-black hover:bg-[#8DD65F] font-semibold text-lg px-8 py-6 h-auto transition-all hover:scale-105 hover:shadow-lg hover:shadow-[#9FE870]/20"
+                    className="w-full sm:w-auto bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold text-lg px-8 py-6 h-auto transition-all hover:scale-105 hover:shadow-lg hover:shadow-[#FFB84D]/20"
                   >
                     <Link href="/register">
                       Start Trading Now <ArrowRight className="ml-2 h-5 w-5" />
@@ -39,42 +39,42 @@ export default function HomePage() {
                     asChild 
                     size="lg" 
                     variant="outline"
-                    className="w-full sm:w-auto border-2 border-[#9FE870] bg-transparent text-[#9FE870] hover:bg-[#9FE870]/10 font-semibold text-lg px-8 py-6 h-auto transition-all"
+                    className="w-full sm:w-auto border-2 border-[#FFB84D] bg-transparent text-[#FFB84D] hover:bg-[#FFB84D]/10 font-semibold text-lg px-8 py-6 h-auto transition-all"
                   >
                     <Link href="/products">
                       Browse Market
                     </Link>
                   </Button>
                 </div>
-                <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-white/70">
+                <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870]" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D]" />
                     <span>Built for real businesses</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870]" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D]" />
                     <span>Verified companies only</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-[#9FE870]" />
+                    <CheckCircle className="h-5 w-5 text-[#FFB84D]" />
                     <span>Direct supplier access</span>
                   </div>
                 </div>
               </div>
 
               {/* Right side: Market Snapshot Card */}
-              <div className="bg-white rounded-xl shadow-2xl p-6 lg:p-8">
+              <div className="bg-white rounded-xl shadow-2xl p-6 lg:p-8 border-2">
                 <div className="flex items-center justify-between border-b pb-4 mb-6">
                   <h3 className="text-lg font-bold text-gray-900">Live Market</h3>
                   <span className="inline-flex items-center gap-1.5 text-sm text-gray-600">
-                    <span className="h-2 w-2 rounded-full bg-[#9FE870] animate-pulse"></span>
+                    <span className="h-2 w-2 rounded-full bg-[#FFB84D] animate-pulse"></span>
                     Updated now
                   </span>
                 </div>
 
                 <div className="space-y-4">
                   {/* Product 1 */}
-                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#9FE870]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
+                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#FFB84D]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
                     <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src="/organic-apples.png"
@@ -93,11 +93,11 @@ export default function HomePage() {
                         <span>Poland</span>
                       </div>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#9FE870]/10 text-[#9FE870] text-xs font-medium border border-[#9FE870]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFB84D]/10 text-[#FFB84D] text-xs font-medium border border-[#FFB84D]/20">
                           <CheckCircle className="h-3 w-3" />
                           EU Customs Cleared
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#9FE870]/10 text-[#9FE870] text-xs font-medium border border-[#9FE870]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFB84D]/10 text-[#FFB84D] text-xs font-medium border border-[#FFB84D]/20">
                           Verified Supplier
                         </span>
                       </div>
@@ -105,7 +105,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Product 2 */}
-                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#9FE870]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
+                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#FFB84D]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
                     <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src="/pile-of-coffee-beans.png"
@@ -124,7 +124,7 @@ export default function HomePage() {
                         <span>Brazil</span>
                       </div>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#9FE870]/10 text-[#9FE870] text-xs font-medium border border-[#9FE870]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFB84D]/10 text-[#FFB84D] text-xs font-medium border border-[#FFB84D]/20">
                           <CheckCircle className="h-3 w-3" />
                           Verified Supplier
                         </span>
@@ -133,7 +133,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Product 3 */}
-                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#9FE870]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
+                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#FFB84D]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
                     <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src="/olive-oil-still-life.png"
@@ -152,11 +152,11 @@ export default function HomePage() {
                         <span>Spain</span>
                       </div>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#9FE870]/10 text-[#9FE870] text-xs font-medium border border-[#9FE870]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFB84D]/10 text-[#FFB84D] text-xs font-medium border border-[#FFB84D]/20">
                           <CheckCircle className="h-3 w-3" />
                           EU Customs Cleared
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#9FE870]/10 text-[#9FE870] text-xs font-medium border border-[#9FE870]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFB84D]/10 text-[#FFB84D] text-xs font-medium border border-[#FFB84D]/20">
                           Verified Supplier
                         </span>
                       </div>
@@ -164,7 +164,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Product 4 */}
-                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#9FE870]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
+                  <div className="flex gap-4 p-4 rounded-lg border hover:border-[#FFB84D]/30 hover:bg-gray-50/50 transition-all cursor-pointer">
                     <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src="/fresh-tomatoes.png"
@@ -183,11 +183,11 @@ export default function HomePage() {
                         <span>Netherlands</span>
                       </div>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#9FE870]/10 text-[#9FE870] text-xs font-medium border border-[#9FE870]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFB84D]/10 text-[#FFB84D] text-xs font-medium border border-[#FFB84D]/20">
                           <CheckCircle className="h-3 w-3" />
                           EU Customs Cleared
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#9FE870]/10 text-[#9FE870] text-xs font-medium border border-[#9FE870]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFB84D]/10 text-[#FFB84D] text-xs font-medium border border-[#FFB84D]/20">
                           Verified Supplier
                         </span>
                       </div>
@@ -195,7 +195,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <Button asChild className="w-full mt-6 bg-black text-white hover:bg-gray-900">
+                <Button asChild className="w-full mt-6 bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold">
                   <Link href="/products">
                     View All Products <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -204,7 +204,7 @@ export default function HomePage() {
             </div>
           </div>
           {/* Subtle grid pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:4rem_4rem]" />
         </section>
 
         {/* Stats Section */}

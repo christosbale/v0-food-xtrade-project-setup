@@ -137,18 +137,18 @@ export function LoginForm() {
           )}
 
           {needsEmailConfirmation && (
-            <div className="bg-lime-50 border border-lime-200 rounded-lg p-4 space-y-3">
+            <div className="bg-[#FFB84D]/10 border border-[#FFB84D]/20 rounded-lg p-4 space-y-3">
               <div className="flex items-start gap-3">
-                <Mail className="h-5 w-5 text-lime-600 mt-0.5" />
+                <Mail className="h-5 w-5 text-[#FFB84D] mt-0.5" />
                 <div className="flex-1 space-y-2">
-                  <p className="text-sm font-medium text-lime-900">
+                  <p className="text-sm font-medium text-foreground">
                     Email Confirmation Required
                   </p>
-                  <p className="text-sm text-lime-700">
+                  <p className="text-sm text-muted-foreground">
                     Please check your inbox and click the confirmation link we sent to{' '}
                     <strong>{formData.email}</strong>
                   </p>
-                  <p className="text-xs text-lime-600">
+                  <p className="text-xs text-muted-foreground">
                     Can't find the email? Check your spam folder.
                   </p>
                 </div>
@@ -159,7 +159,7 @@ export function LoginForm() {
                 size="sm"
                 onClick={handleResendConfirmation}
                 disabled={isResending}
-                className="w-full border-lime-300 text-lime-700 hover:bg-lime-100"
+                className="w-full border-[#FFB84D]/30 text-foreground hover:bg-[#FFB84D]/10"
               >
                 {isResending ? (
                   <>
@@ -174,7 +174,7 @@ export function LoginForm() {
           )}
 
           {resendSuccess && (
-            <div className="text-sm text-lime-700 bg-lime-50 border border-lime-200 rounded p-3">
+            <div className="text-sm text-foreground bg-[#FFB84D]/10 border border-[#FFB84D]/20 rounded p-3">
               Confirmation email sent! Please check your inbox.
             </div>
           )}
