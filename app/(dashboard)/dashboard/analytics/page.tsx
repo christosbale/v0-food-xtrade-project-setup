@@ -109,9 +109,9 @@ export default function AnalyticsPage() {
     loadAnalytics()
   }, [timeRange])
 
-  function processTimeSeriesData(items: any[], dateField: string) {
+  function processTimeSeriesData(items: any[], dateField: string): Array<{ month: string; count: number }> {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    const last6Months = []
+    const last6Months: Array<{ month: string; count: number }> = []
     const now = new Date()
     
     for (let i = 5; i >= 0; i--) {
@@ -154,8 +154,8 @@ export default function AnalyticsPage() {
     return Array.from(statusMap.entries()).map(([status, count]) => ({ status, count }))
   }
 
-  function processMessageActivity(messages: any[]) {
-    const last7Days = []
+  function processMessageActivity(messages: any[]): Array<{ day: string; count: number }> {
+    const last7Days: Array<{ day: string; count: number }> = []
     const now = new Date()
     
     for (let i = 6; i >= 0; i--) {
