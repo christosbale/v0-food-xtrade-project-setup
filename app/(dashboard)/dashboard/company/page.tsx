@@ -2,11 +2,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Building2, CheckCircle2, Clock, XCircle, Mail, ExternalLink, Upload, Eye, RefreshCw, Package, Plus } from 'lucide-react'
+import { Building2, CheckCircle2, Clock, XCircle, Mail, ExternalLink, Upload, Eye, RefreshCw, Package, Plus, Shield, AlertTriangle } from 'lucide-react'
 import { getCurrentCompany } from '@/lib/auth/current-company'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { VerificationComplianceForm } from '@/components/dashboard/verification-compliance-form'
 
 export default async function CompanyProfilePage() {
   const session = await getCurrentCompany()
@@ -51,34 +52,48 @@ export default async function CompanyProfilePage() {
   ]
 
   const verificationStatus = company.verification_status || 'pending'
+  const verificationLevel = company.verification_level // 'basic' | 'trusted' | 'premium'
+  const verifiedAt = company.verified_at
+  const riskScore = company.risk_score
 
   const statusConfig = {
     pending: {
       icon: Clock,
       color: 'bg-yellow-50 border-yellow-200 text-yellow-800',
       badgeVariant: 'secondary' as const,
-      title: 'Company Under Review',
+      title: 'Verification in Progress',
       description: 'Your company is currently under review. We usually respond within 24–48 hours.',
     },
     verified: {
       icon: CheckCircle2,
       color: 'bg-green-50 border-green-200 text-green-800',
       badgeVariant: 'default' as const,
-      title: 'Company Verified',
-      description: 'Your company is currently: Verified. You can list products and receive RFQs.',
+      title: 'Verified Supplier',
+      description: 'Your company is verified. You can list products and receive RFQs from buyers.',
     },
     rejected: {
       icon: XCircle,
       color: 'bg-red-50 border-red-200 text-red-800',
       badgeVariant: 'destructive' as const,
-      title: 'More Information Required',
+      title: 'Verification Rejected',
       description:
         'Your company verification was rejected. Please review the feedback and submit additional documentation.',
     },
   }
 
+  const levelConfig = {
+    basic: { label: 'Basic Verified', color: 'bg-blue-100 text-blue-800', icon: Shield },
+    trusted: { label: 'Trusted Supplier', color: 'bg-purple-100 text-purple-800', icon: Shield },
+    premium: { label: 'Premium Verified Supplier', color: 'bg-amber-100 text-amber-800', icon: Shield },
+  }
+
   const currentStatus = statusConfig[verificationStatus as keyof typeof statusConfig] || statusConfig.pending
   const StatusIcon = currentStatus.icon
+  const currentLevel = verificationLevel ? levelConfig[verificationLevel as keyof typeof levelConfig] : null
+
+  const hasSubmittedVerification = company.verification_documents && 
+    Object.keys(company.verification_documents).length > 0
+  const canEditVerification = !hasSubmittedVerification || verificationStatus === 'pending'
 
   return (
     <div className="space-y-6">
@@ -100,6 +115,67 @@ export default async function CompanyProfilePage() {
         </AlertTitle>
         <AlertDescription>{currentStatus.description}</AlertDescription>
       </Alert>
+
+      {verificationStatus === 'verified' && (
+        <Card className="border-green-200 bg-green-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-900">
+              <CheckCircle2 className="h-5 w-5" />
+              Verification Details
+            </CardTitle>
+            <CardDescription>Your company has been verified by foodXtrade</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              {/* Verification Level */}
+              {currentLevel && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Verification Level</p>
+                  <Badge className={`${currentLevel.color} text-sm px-3 py-1`}>
+                    <currentLevel.icon className="h-4 w-4 mr-1.5" />
+                    {currentLevel.label}
+                  </Badge>
+                </div>
+              )}
+
+              {/* Verified Date */}
+              {verifiedAt && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Verified On</p>
+                  <p className="text-base font-medium text-green-900">
+                    {new Date(verifiedAt).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </p>
+                </div>
+              )}
+
+              {/* Risk Score */}
+              {riskScore !== null && riskScore !== undefined && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Risk Assessment</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-medium text-green-900">
+                      {riskScore}/100
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {riskScore < 30 ? '(Low risk)' : riskScore < 60 ? '(Medium risk)' : '(Higher review)'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 border-t">
+              <p className="text-sm text-green-900">
+                <strong>Benefits:</strong> Verified badge on your company profile and products, higher visibility in search results, and increased buyer trust.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Company Information Card */}
       <Card>
@@ -161,6 +237,44 @@ export default async function CompanyProfilePage() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Verification & Compliance
+              </CardTitle>
+              <CardDescription>
+                Submit your company documentation for verification
+              </CardDescription>
+            </div>
+            {hasSubmittedVerification && verificationStatus !== 'pending' && (
+              <Badge variant={verificationStatus === 'verified' ? 'default' : 'secondary'}>
+                {verificationStatus === 'verified' ? 'Documents Verified' : 'Under Review'}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!canEditVerification && verificationStatus === 'verified' ? (
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertTitle className="text-green-900">Verification Complete</AlertTitle>
+              <AlertDescription className="text-green-800">
+                Your company documentation has been verified. Contact support if you need to update any information.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <VerificationComplianceForm 
+              company={company}
+              canEdit={canEditVerification}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Your Products */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -253,51 +367,6 @@ export default async function CompanyProfilePage() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Compliance & Documents Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Compliance & Documents</CardTitle>
-              <CardDescription>
-                Manage your business registration and certification documents
-              </CardDescription>
-            </div>
-            <Button variant="outline" className="gap-2">
-              <Upload className="h-4 w-4" />
-              Upload Additional Document
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-center justify-between rounded-lg border bg-card p-4"
-              >
-                <div className="flex-1">
-                  <p className="font-medium">{doc.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {doc.filename} • Uploaded {doc.uploadedAt}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Eye className="h-4 w-4" />
-                    View
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    Replace
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
 

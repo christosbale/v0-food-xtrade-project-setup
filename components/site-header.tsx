@@ -14,38 +14,56 @@ export function SiteHeader() {
         <div className="flex items-center gap-16">
           <Link href="/" className="flex items-center">
             <span className="text-2xl md:text-3xl font-bold tracking-tight text-black">
-              food<span className="text-[#FFD500]">X</span>trade
+              food<span className="text-[#FFB84D]">X</span>trade
             </span>
           </Link>
           
           <nav className="hidden items-center gap-8 md:flex">
             <Link
               href="/products"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
             >
               Products
             </Link>
             <Link
+              href="/price-index"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
+            >
+              Price Index
+            </Link>
+            <Link
+              href="/insights"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
+            >
+              Insights
+            </Link>
+            <Link
+              href="/logistics"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
+            >
+              Logistics
+            </Link>
+            <Link
               href="/buyers"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
             >
               For Buyers
             </Link>
             <Link
               href="/suppliers"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
             >
               For Suppliers
             </Link>
             <Link
               href="/how-it-works"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
             >
               How It Works
             </Link>
             <Link
               href="/pricing"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFD500] after:transition-all hover:after:w-full"
+              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
             >
               Pricing
             </Link>
@@ -63,7 +81,7 @@ export function SiteHeader() {
               </Button>
             </Link>
             <Link href="/register">
-              <Button className="bg-[#FFD500] text-black font-medium hover:bg-[#FFD500]/90 text-title-medium h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all">
+              <Button className="bg-[#FFB84D] text-black font-medium hover:bg-[#FFB84D]/90 text-title-medium h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all">
                 Get Started
               </Button>
             </Link>
@@ -83,6 +101,24 @@ export function SiteHeader() {
                   className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
                 >
                   Products
+                </Link>
+                <Link
+                  href="/price-index"
+                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                >
+                  Price Index
+                </Link>
+                <Link
+                  href="/insights"
+                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                >
+                  Insights
+                </Link>
+                <Link
+                  href="/logistics"
+                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                >
+                  Logistics
                 </Link>
                 <Link
                   href="/buyers"

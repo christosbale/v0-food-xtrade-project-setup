@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,18 +15,23 @@ import {
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RequestQuoteModal } from '@/components/products/request-quote-modal'
-import { Search, Filter, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { Search, Filter, ChevronLeft, ChevronRight, CheckCircle2, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice, type Currency } from '@/lib/utils/currency'
+import { isInSeason, getSeasonRangeLabel } from '@/lib/utils/seasonality'
+import { useSearchParams } from 'next/navigation'
+import { PRODUCT_CATEGORIES } from '@/config/product-categories'
+import { trackProductSearch } from '@/app/products/actions'
 
 const CATEGORIES = ['Nuts', 'Coffee', 'Cocoa', 'Dried Fruits', 'Spices', 'Grains', 'Seeds', 'Oils', 'Other']
-const CUSTOMS_STATUS = ['EU customs cleared', 'US customs cleared', 'Bonded warehouse', 'Origin country only']
+const CUSTOMS_STATUS = ['eu_cleared', 'non_eu', 'bonded', 'free_zone', 'local_only']
 const CERTIFICATIONS = ['Organic', 'HACCP', 'ISO', 'Fairtrade', 'Rainforest Alliance']
 
 interface Product {
   id: string
   product_name: string
   category: string
+  product_type?: string
   origin_country: string
   available_quantity: number
   unit: string
@@ -38,6 +43,12 @@ interface Product {
   packaging: string | null
   certifications: string[]
   created_at: string
+  min_order_quantity?: number
+  min_order_unit?: string
+  warehouse_country?: string
+  warehouse_city?: string
+  harvest_start_month?: number | null
+  harvest_end_month?: number | null
   company?: {
     id: string
     company_name: string
@@ -50,6 +61,10 @@ interface ProductsMarketplaceProps {
 }
 
 export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
+  const searchParams = useSearchParams()
+  const urlSubcategory = searchParams.get('subcategory')
+  const urlOriginCountry = searchParams.get('origin_country')
+
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined)
   const [selectedOrigin, setSelectedOrigin] = useState<string | undefined>(undefined)
@@ -60,18 +75,43 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
   const [sortBy, setSortBy] = useState('newest')
   const [currentPage, setCurrentPage] = useState(1)
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [showOnlyInSeason, setShowOnlyInSeason] = useState(false)
 
   const itemsPerPage = 6
 
-  // Get unique origins from products
   const uniqueOrigins = useMemo(() => {
     const origins = new Set(products.map(p => p.origin_country))
     return Array.from(origins).sort()
   }, [products])
 
-  // Filter and sort logic
+  const getCustomsBadgeLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      'eu_cleared': 'EU-cleared stock',
+      'non_eu': 'Non-EU origin stock',
+      'bonded': 'Bonded warehouse',
+      'free_zone': 'Free zone stock',
+      'local_only': 'Local market only',
+    }
+    return labels[status] || status
+  }
+
+  const CUSTOMS_STATUS_LABELS: Record<string, string> = {
+    'eu_cleared': 'EU-cleared',
+    'non_eu': 'Non-EU',
+    'bonded': 'Bonded',
+    'free_zone': 'Free zone',
+    'local_only': 'Local only',
+  }
+
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
+      if (urlSubcategory && product.product_type !== urlSubcategory) {
+        return false
+      }
+      if (urlOriginCountry && product.origin_country !== urlOriginCountry) {
+        return false
+      }
+
       const matchesSearch = product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = !selectedCategory || product.category === selectedCategory
       const matchesOrigin = !selectedOrigin || product.origin_country === selectedOrigin
@@ -83,6 +123,8 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
         selectedCertifications.every((cert) => product.certifications?.includes(cert))
       const matchesMinPrice = !minPrice || product.price_per_unit >= parseFloat(minPrice)
       const matchesMaxPrice = !maxPrice || product.price_per_unit <= parseFloat(maxPrice)
+      const matchesInSeason = !showOnlyInSeason || 
+        (product.category === 'fresh_produce' && isInSeason(product))
 
       return (
         matchesSearch &&
@@ -91,7 +133,8 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
         matchesCustoms &&
         matchesCertifications &&
         matchesMinPrice &&
-        matchesMaxPrice
+        matchesMaxPrice &&
+        matchesInSeason
       )
     }).sort((a, b) => {
       switch (sortBy) {
@@ -105,7 +148,7 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       }
     })
-  }, [products, searchQuery, selectedCategory, selectedOrigin, selectedCustomsStatus, selectedCertifications, minPrice, maxPrice, sortBy])
+  }, [products, searchQuery, selectedCategory, selectedOrigin, selectedCustomsStatus, selectedCertifications, minPrice, maxPrice, sortBy, showOnlyInSeason, urlSubcategory, urlOriginCountry])
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
   const paginatedProducts = filteredProducts.slice(
@@ -125,9 +168,18 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
     )
   }
 
+  const getSubcategoryLabel = (subcategoryId: string): string => {
+    for (const category of PRODUCT_CATEGORIES) {
+      const subcategory = category.subcategories.find(s => s.id === subcategoryId)
+      if (subcategory) {
+        return subcategory.label
+      }
+    }
+    return subcategoryId
+  }
+
   const FiltersPanel = () => (
     <div className="space-y-6">
-      {/* Search */}
       <div className="space-y-2">
         <Label htmlFor="search">Search</Label>
         <div className="relative">
@@ -142,7 +194,6 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
         </div>
       </div>
 
-      {/* Category */}
       <div className="space-y-2">
         <Label htmlFor="category">Category</Label>
         <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value === 'all' ? undefined : value)}>
@@ -160,7 +211,6 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
         </Select>
       </div>
 
-      {/* Origin */}
       <div className="space-y-2">
         <Label htmlFor="origin">Origin Country</Label>
         <Select value={selectedOrigin} onValueChange={(value) => setSelectedOrigin(value === 'all' ? undefined : value)}>
@@ -178,7 +228,6 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
         </Select>
       </div>
 
-      {/* Customs Status */}
       <div className="space-y-3">
         <Label>Customs Status</Label>
         {CUSTOMS_STATUS.map((status) => (
@@ -192,13 +241,12 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
               htmlFor={`customs-${status}`}
               className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
             >
-              {status}
+              {CUSTOMS_STATUS_LABELS[status]}
             </label>
           </div>
         ))}
       </div>
 
-      {/* Certifications */}
       <div className="space-y-3">
         <Label>Certifications</Label>
         {CERTIFICATIONS.map((cert) => (
@@ -218,7 +266,23 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
         ))}
       </div>
 
-      {/* Price Range */}
+      <div className="space-y-3 pt-2 border-t">
+        <Label>Fresh Produce</Label>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="in-season-only"
+            checked={showOnlyInSeason}
+            onCheckedChange={(checked) => setShowOnlyInSeason(checked as boolean)}
+          />
+          <label
+            htmlFor="in-season-only"
+            className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+          >
+            Show only in-season products
+          </label>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label>Price Range (per unit)</Label>
         <div className="flex gap-2">
@@ -239,10 +303,86 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
     </div>
   )
 
+  useEffect(() => {
+    const trackSearch = async () => {
+      await trackProductSearch({
+        searchQuery,
+        category: selectedCategory,
+        subcategory: urlSubcategory || undefined,
+        origin: selectedOrigin || urlOriginCountry || undefined,
+        customsStatus: selectedCustomsStatus,
+        certifications: selectedCertifications,
+        minPrice,
+        maxPrice,
+      })
+    }
+
+    // Only track if user has applied any filter/search
+    if (
+      searchQuery ||
+      selectedCategory ||
+      selectedOrigin ||
+      selectedCustomsStatus.length > 0 ||
+      selectedCertifications.length > 0 ||
+      minPrice ||
+      maxPrice ||
+      urlSubcategory ||
+      urlOriginCountry
+    ) {
+      trackSearch()
+    }
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedOrigin,
+    selectedCustomsStatus,
+    selectedCertifications,
+    minPrice,
+    maxPrice,
+    urlSubcategory,
+    urlOriginCountry,
+  ])
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {(urlSubcategory || urlOriginCountry) && (
+        <div className="mb-6 p-4 bg-[#FFB84D]/10 border border-[#FFB84D]/30 rounded-lg">
+          <p className="text-sm font-medium mb-2">Active Filters from Origin Comparison:</p>
+          <div className="flex flex-wrap gap-2">
+            {urlSubcategory && (
+              <Badge variant="secondary" className="bg-white">
+                Product Type: {getSubcategoryLabel(urlSubcategory)}
+              </Badge>
+            )}
+            {urlOriginCountry && (
+              <Badge variant="secondary" className="bg-white">
+                Origin: {urlOriginCountry}
+              </Badge>
+            )}
+            <Link href="/products">
+              <Button variant="ghost" size="sm" className="h-6 text-xs">
+                Clear Filters
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {urlSubcategory && (
+        <div className="mb-6">
+          <Link href={`/compare/${urlSubcategory}`}>
+            <Button 
+              variant="outline" 
+              className="w-full sm:w-auto border-[#FFB84D] text-foreground hover:bg-[#FFB84D]/10"
+            >
+              Compare origins for this commodity
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Mobile Filters Toggle */}
         <div className="lg:hidden">
           <Button
             variant="outline"
@@ -260,16 +400,13 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
           )}
         </div>
 
-        {/* Desktop Filters Sidebar */}
         <aside className="hidden lg:block lg:w-64 flex-shrink-0">
           <Card className="p-4 sticky top-4">
             <FiltersPanel />
           </Card>
         </aside>
 
-        {/* Products Grid */}
         <div className="flex-1">
-          {/* Results Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <p className="text-muted-foreground">
               Showing <span className="font-medium text-foreground">{filteredProducts.length}</span> products
@@ -292,7 +429,6 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
             </div>
           </div>
 
-          {/* Product Cards */}
           {paginatedProducts.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -320,11 +456,11 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
                           {product.company && (
                             <Link 
                               href={`/companies/${product.company.id}`}
-                              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-1"
+                              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mt-1.5 group"
                             >
-                              <span>by {product.company.company_name}</span>
+                              <span className="group-hover:underline">by {product.company.company_name}</span>
                               {product.company.verification_status === 'verified' && (
-                                <CheckCircle2 className="h-3.5 w-3.5 text-[#9FE870]" />
+                                <CheckCircle2 className="h-3.5 w-3.5 text-[#FFB84D] flex-shrink-0" />
                               )}
                             </Link>
                           )}
@@ -345,9 +481,35 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
                         </div>
 
                         <div className="space-y-2">
-                          <Badge variant="outline" className="text-xs">
-                            {product.customs_status}
-                          </Badge>
+                          {product.customs_status && (
+                            <Badge variant="outline" className="text-xs">
+                              {getCustomsBadgeLabel(product.customs_status)}
+                            </Badge>
+                          )}
+                          
+                          {product.category === 'fresh_produce' && product.harvest_start_month && product.harvest_end_month && (
+                            <div className="space-y-1">
+                              {isInSeason(product) ? (
+                                <Badge className="text-xs bg-green-100 text-green-800 border-green-300">
+                                  In season now
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs text-muted-foreground">
+                                  Out of season – prebooking
+                                </Badge>
+                              )}
+                              <p className="text-xs text-muted-foreground">
+                                Harvest: {getSeasonRangeLabel(product.harvest_start_month, product.harvest_end_month)}
+                              </p>
+                            </div>
+                          )}
+
+                          {product.min_order_quantity && product.min_order_unit && (
+                            <p className="text-xs text-muted-foreground">
+                              MOQ: {product.min_order_quantity} {product.min_order_unit}
+                            </p>
+                          )}
+
                           {product.certifications && product.certifications.length > 0 && (
                             <div className="flex flex-wrap gap-1">
                               {product.certifications.map((cert) => (
@@ -374,14 +536,13 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
                           id: product.company?.id,
                         },
                       }}>
-                        <Button className="flex-1 bg-[#9FE870] hover:bg-[#8DD760] text-black">Request Quote</Button>
+                        <Button className="flex-1 bg-[#FFB84D] hover:bg-[#E5A043] text-black font-semibold">Request Quote</Button>
                       </RequestQuoteModal>
                     </CardFooter>
                   </Card>
                 ))}
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-8">
                   <Button
@@ -433,7 +594,6 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
               )}
             </>
           ) : (
-            // Empty State
             <Card className="p-12 text-center">
               <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                 <Search className="h-8 w-8 text-muted-foreground" />
@@ -452,6 +612,7 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
                   setSelectedCertifications([])
                   setMinPrice('')
                   setMaxPrice('')
+                  setShowOnlyInSeason(false)
                 }}
               >
                 Clear all filters

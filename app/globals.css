@@ -17,14 +17,14 @@
   --primary: #000000; /* Black for Primary Elements */
   --primary-foreground: #FFFFFF;
   
-  /* Yellow #FFD500 for all interactive elements */
-  --secondary: #FFD500;
+  /* Updated yellow from #FFD500 to #FFB84D for all interactive elements */
+  --secondary: #FFB84D;
   --secondary-foreground: #000000;
   
   --muted: #F5F5F5;
   --muted-foreground: #737373;
   
-  --accent: #FFD500;
+  --accent: #FFB84D;
   --accent-foreground: #000000;
   
   --destructive: #DC2626;
@@ -33,9 +33,9 @@
   /* Neutral borders per spec */
   --border: #E6E6E6;
   --input: #DADADA;
-  --ring: #FFD500;
+  --ring: #FFB84D;
   
-  --chart-1: #FFD500;
+  --chart-1: #FFB84D;
   --chart-2: #000000;
   --chart-3: #737373;
   --chart-4: #A3A3A3;
@@ -46,12 +46,12 @@
   
   --sidebar: #FAFAFA;
   --sidebar-foreground: #000000;
-  --sidebar-primary: #FFD500;
+  --sidebar-primary: #FFB84D;
   --sidebar-primary-foreground: #000000;
   --sidebar-accent: #F5F5F5;
   --sidebar-accent-foreground: #000000;
   --sidebar-border: #E6E6E6;
-  --sidebar-ring: #FFD500;
+  --sidebar-ring: #FFB84D;
 }
 
 @theme inline {

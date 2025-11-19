@@ -21,6 +21,8 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 import { Currency, CURRENCY_LABELS } from '@/lib/utils/currency'
+import { getMonthOptions } from '@/lib/utils/seasonality'
+import { createProduct, updateProduct } from '@/app/(dashboard)/dashboard/products/actions'
 
 interface ProductFormProps {
   initialData?: {
@@ -36,11 +38,29 @@ interface ProductFormProps {
     certifications: string[]
     harvestDate: string
     shelfLife: string
+    customsStatus: string
+    warehouseCountry: string
+    warehouseCity: string
+    warehouseType: string
+    minOrderQuantity: string
+    minOrderUnit: string
+    logisticsNotes: string
+    harvestStartMonth: string
+    harvestEndMonth: string
+    cartonWeight: string
+    cartonUnits: string
+    cartonsPerPallet: string
+    palletHeight: string
+    palletType: string
   }
   productId?: string
 }
 
 const units = ['kg', 'liter', 'piece', 'box', 'ton']
+
+const minOrderUnits = ['kg', 'MT', 'pallet', 'container']
+
+const warehouseTypes = ['Standard warehouse', 'Bonded warehouse', 'Free zone']
 
 const availableCertifications = [
   'Organic',
@@ -60,6 +80,7 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
   const [images, setImages] = useState<string[]>([])
   const [companyId, setCompanyId] = useState<string | null>(null)
   const [isLoadingCompany, setIsLoadingCompany] = useState(true)
+  const [originalPrice, setOriginalPrice] = useState<number | undefined>(undefined)
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     category: initialData?.category || '',
@@ -72,17 +93,31 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
     origin: initialData?.origin || '',
     certifications: initialData?.certifications || [],
     incoterm: 'EXW',
-    customsStatus: 'Not cleared',
+    customsStatus: initialData?.customsStatus || '',
     cropYear: new Date().getFullYear().toString(),
     packaging: '',
     currency: 'EUR' as Currency,
     harvestDate: initialData?.harvestDate || '',
     shelfLife: initialData?.shelfLife || '',
+    warehouseCountry: initialData?.warehouseCountry || '',
+    warehouseCity: initialData?.warehouseCity || '',
+    warehouseType: initialData?.warehouseType || '',
+    minOrderQuantity: initialData?.minOrderQuantity || '',
+    minOrderUnit: initialData?.minOrderUnit || 'kg',
+    logisticsNotes: initialData?.logisticsNotes || '',
+    harvestStartMonth: initialData?.harvestStartMonth || '',
+    harvestEndMonth: initialData?.harvestEndMonth || '',
+    cartonWeight: initialData?.cartonWeight || '',
+    cartonUnits: initialData?.cartonUnits || '',
+    cartonsPerPallet: initialData?.cartonsPerPallet || '',
+    palletHeight: initialData?.palletHeight || '',
+    palletType: initialData?.palletType || '',
   })
 
   const selectedCategory = PRODUCT_CATEGORIES.find(cat => cat.id === formData.category)
   const availableSubcategories = selectedCategory?.subcategories || []
   const isFreshProduce = formData.category === 'fresh_produce'
+  const monthOptions = getMonthOptions()
 
   useEffect(() => {
     async function fetchUserCompany() {
@@ -102,6 +137,11 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         }
 
         setCompanyId(session.company.id)
+        
+        if (initialData?.price) {
+          setOriginalPrice(parseFloat(initialData.price))
+        }
+        
         setIsLoadingCompany(false)
       } catch (err) {
         console.error('[v0] Error in fetchUserCompany:', err)
@@ -167,6 +207,38 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         setIsLoading(false)
         return
       }
+      if (!formData.harvestStartMonth) {
+        setError('Harvest start month is required for fresh produce.')
+        setIsLoading(false)
+        return
+      }
+      if (!formData.harvestEndMonth) {
+        setError('Harvest end month is required for fresh produce.')
+        setIsLoading(false)
+        return
+      }
+      if (!formData.cartonWeight) {
+        setError('Carton weight is required for fresh produce.')
+        setIsLoading(false)
+        return
+      }
+      if (!formData.cartonsPerPallet) {
+        setError('Cartons per pallet is required for fresh produce.')
+        setIsLoading(false)
+        return
+      }
+    }
+
+    if (!isFreshProduce && !formData.customsStatus) {
+      setError('Customs status is required for non-fresh products.')
+      setIsLoading(false)
+      return
+    }
+
+    if (!formData.palletType) {
+      setError('Pallet type is required.')
+      setIsLoading(false)
+      return
     }
 
     if (!companyId) {
@@ -193,28 +265,41 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
         packaging: formData.packaging,
         status: status,
         currency: formData.currency,
+        warehouse_country: formData.warehouseCountry,
+        warehouse_city: formData.warehouseCity,
+        warehouse_type: formData.warehouseType,
+        min_order_unit: formData.minOrderUnit,
+        logistics_notes: formData.logisticsNotes,
+        carton_weight: formData.cartonWeight ? parseFloat(formData.cartonWeight) : null,
+        carton_units: formData.cartonUnits ? parseFloat(formData.cartonUnits) : null,
+        cartons_per_pallet: formData.cartonsPerPallet ? parseFloat(formData.cartonsPerPallet) : null,
+        pallet_height: formData.palletHeight ? parseFloat(formData.palletHeight) : null,
+        pallet_type: formData.palletType,
         ...(isFreshProduce && {
           harvest_date: formData.harvestDate,
           shelf_life: formData.shelfLife,
+          harvest_start_month: formData.harvestStartMonth ? parseInt(formData.harvestStartMonth) : null,
+          harvest_end_month: formData.harvestEndMonth ? parseInt(formData.harvestEndMonth) : null,
         }),
       }
 
       console.log('[v0] Submitting product data:', productData)
 
-      const supabase = createClient()
-      const { data, error: insertError } = await supabase
-        .from('products')
-        .insert([productData])
-        .select()
-
-      if (insertError) {
-        throw insertError
+      let result
+      if (productId) {
+        result = await updateProduct(productId, productData, originalPrice)
+      } else {
+        result = await createProduct(productData)
       }
 
-      console.log('[v0] Product inserted successfully:', data)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+
+      console.log('[v0] Product saved successfully:', result.data)
       router.push('/dashboard/products')
     } catch (err) {
-      console.error('[v0] Error inserting product:', err)
+      console.error('[v0] Error saving product:', err)
       setError(err instanceof Error ? err.message : 'Could not save product. Please try again.')
     } finally {
       setIsLoading(false)
@@ -417,6 +502,61 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
                     Expected shelf life from harvest date
                   </p>
                 </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Label className="text-base font-semibold">Seasonality *</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Specify the harvest season for this product. Buyers can filter by in-season products.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="harvestStartMonth">Harvest Start Month *</Label>
+                  <Select
+                    value={formData.harvestStartMonth}
+                    onValueChange={(value) => setFormData({ ...formData, harvestStartMonth: value })}
+                    required
+                  >
+                    <SelectTrigger id="harvestStartMonth">
+                      <SelectValue placeholder="Select start month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthOptions.map((month) => (
+                        <SelectItem key={month.value} value={month.value.toString()}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    When harvest season begins
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="harvestEndMonth">Harvest End Month *</Label>
+                  <Select
+                    value={formData.harvestEndMonth}
+                    onValueChange={(value) => setFormData({ ...formData, harvestEndMonth: value })}
+                    required
+                  >
+                    <SelectTrigger id="harvestEndMonth">
+                      <SelectValue placeholder="Select end month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthOptions.map((month) => (
+                        <SelectItem key={month.value} value={month.value.toString()}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    When harvest season ends
+                  </p>
+                </div>
               </>
             )}
 
@@ -543,41 +683,209 @@ export function ProductForm({ initialData, productId }: ProductFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customsStatus">Customs Status</Label>
+              <Label htmlFor="customsStatus">
+                Customs Status {!isFreshProduce && <span className="text-destructive">*</span>}
+              </Label>
               <Select
                 value={formData.customsStatus}
                 onValueChange={(value) => setFormData({ ...formData, customsStatus: value })}
+                required={!isFreshProduce}
               >
                 <SelectTrigger id="customsStatus">
-                  <SelectValue />
+                  <SelectValue placeholder="Select customs status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Not cleared">Not Cleared</SelectItem>
-                  <SelectItem value="EU customs cleared">EU Customs Cleared</SelectItem>
-                  <SelectItem value="US customs cleared">US Customs Cleared</SelectItem>
+                  <SelectItem value="eu_cleared">EU customs cleared</SelectItem>
+                  <SelectItem value="non_eu">Non-EU stock (origin warehouse)</SelectItem>
+                  <SelectItem value="bonded">Stored in bonded warehouse</SelectItem>
+                  <SelectItem value="free_zone">Free zone / customs-free area</SelectItem>
+                  <SelectItem value="local_only">Local market only (no export)</SelectItem>
+                </SelectContent>
+              </Select>
+              {isFreshProduce && (
+                <p className="text-xs text-muted-foreground">
+                  Recommended for fresh produce
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="warehouseType">Warehouse Type</Label>
+              <Select
+                value={formData.warehouseType}
+                onValueChange={(value) => setFormData({ ...formData, warehouseType: value })}
+              >
+                <SelectTrigger id="warehouseType">
+                  <SelectValue placeholder="Select warehouse type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {warehouseTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cropYear">Crop Year</Label>
+              <Label htmlFor="warehouseCountry">Warehouse Country</Label>
               <Input
-                id="cropYear"
-                type="number"
-                placeholder={new Date().getFullYear().toString()}
-                value={formData.cropYear}
-                onChange={(e) => setFormData({ ...formData, cropYear: e.target.value })}
+                id="warehouseCountry"
+                placeholder="e.g., Germany"
+                value={formData.warehouseCountry}
+                onChange={(e) => setFormData({ ...formData, warehouseCountry: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="packaging">Packaging</Label>
+              <Label htmlFor="warehouseCity">Warehouse City</Label>
               <Input
-                id="packaging"
-                placeholder="e.g., Cartons, Pallets"
-                value={formData.packaging}
-                onChange={(e) => setFormData({ ...formData, packaging: e.target.value })}
+                id="warehouseCity"
+                placeholder="e.g., Hamburg"
+                value={formData.warehouseCity}
+                onChange={(e) => setFormData({ ...formData, warehouseCity: e.target.value })}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="minOrderQuantity">Minimum Order Quantity</Label>
+              <Input
+                id="minOrderQuantity"
+                type="number"
+                placeholder="e.g., 1"
+                value={formData.minOrderQuantity}
+                onChange={(e) => setFormData({ ...formData, minOrderQuantity: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="minOrderUnit">Minimum Order Unit</Label>
+              <Select
+                value={formData.minOrderUnit}
+                onValueChange={(value) => setFormData({ ...formData, minOrderUnit: value })}
+              >
+                <SelectTrigger id="minOrderUnit">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {minOrderUnits.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                      {unit}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="logisticsNotes">Logistics Notes</Label>
+              <Textarea
+                id="logisticsNotes"
+                placeholder="Short notes about loading, packaging on pallets, reefer requirements, etc."
+                rows={3}
+                value={formData.logisticsNotes}
+                onChange={(e) => setFormData({ ...formData, logisticsNotes: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional: Add any specific logistics requirements or notes
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-6 border-t">
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Logistics Data</h3>
+              <p className="text-sm text-muted-foreground">
+                Provide pallet and carton specifications for accurate shipping calculations.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="cartonWeight">
+                  Carton Weight (kg per carton) {isFreshProduce && <span className="text-destructive">*</span>}
+                </Label>
+                <Input
+                  id="cartonWeight"
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g., 10.5"
+                  required={isFreshProduce}
+                  value={formData.cartonWeight}
+                  onChange={(e) => setFormData({ ...formData, cartonWeight: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Weight of one carton including product
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cartonUnits">Carton Units (optional)</Label>
+                <Input
+                  id="cartonUnits"
+                  type="number"
+                  placeholder="e.g., 10"
+                  value={formData.cartonUnits}
+                  onChange={(e) => setFormData({ ...formData, cartonUnits: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Number of units per carton
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cartonsPerPallet">
+                  Cartons per Pallet {isFreshProduce && <span className="text-destructive">*</span>}
+                </Label>
+                <Input
+                  id="cartonsPerPallet"
+                  type="number"
+                  placeholder="e.g., 80"
+                  required={isFreshProduce}
+                  value={formData.cartonsPerPallet}
+                  onChange={(e) => setFormData({ ...formData, cartonsPerPallet: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  How many cartons fit on one pallet
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="palletHeight">Pallet Height (cm)</Label>
+                <Input
+                  id="palletHeight"
+                  type="number"
+                  placeholder="e.g., 120"
+                  value={formData.palletHeight}
+                  onChange={(e) => setFormData({ ...formData, palletHeight: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Total height of loaded pallet
+                </p>
+              </div>
+
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="palletType">
+                  Pallet Type <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={formData.palletType}
+                  onValueChange={(value) => setFormData({ ...formData, palletType: value })}
+                  required
+                >
+                  <SelectTrigger id="palletType">
+                    <SelectValue placeholder="Select pallet type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="euro">Euro Pallet (120×80 cm)</SelectItem>
+                    <SelectItem value="industrial">Industrial Pallet (120×100 cm)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Standard pallet size for shipping
+                </p>
+              </div>
             </div>
           </div>
 
