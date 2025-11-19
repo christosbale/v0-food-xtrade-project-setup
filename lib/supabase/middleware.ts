@@ -6,9 +6,17 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("[v0] Middleware: Missing Supabase environment variables")
+    return supabaseResponse
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -26,32 +34,62 @@ export async function updateSession(request: NextRequest) {
           )
         },
       },
+      auth: {
+        detectSessionInUrl: false,
+        persistSession: true,
+        autoRefreshToken: true,
+        flowType: 'pkce',
+      },
     }
   )
 
-  // This ensures that expired sessions are refreshed automatically
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    (request.nextUrl.pathname.startsWith("/dashboard") ||
-      request.nextUrl.pathname.startsWith("/admin"))
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    return NextResponse.redirect(url)
-  }
+    const isProtectedRoute = 
+      request.nextUrl.pathname.startsWith("/dashboard") ||
+      request.nextUrl.pathname.startsWith("/admin")
 
-  if (
-    user &&
-    (request.nextUrl.pathname === "/login" ||
-      request.nextUrl.pathname.startsWith("/register"))
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/dashboard"
-    return NextResponse.redirect(url)
+    const isAuthRoute = 
+      request.nextUrl.pathname === "/login" ||
+      request.nextUrl.pathname.startsWith("/register")
+
+    if (isProtectedRoute) {
+      console.log('[v0] Middleware: Protected route access', {
+        path: request.nextUrl.pathname,
+        hasUser: !!user,
+        authError: authError?.message
+      })
+    }
+
+    if (!user && isProtectedRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/login"
+      url.searchParams.set('redirectTo', request.nextUrl.pathname)
+      console.log('[v0] Middleware: Redirecting to login from', request.nextUrl.pathname)
+      return NextResponse.redirect(url)
+    }
+
+    if (user && isAuthRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/dashboard"
+      console.log('[v0] Middleware: Redirecting authenticated user to dashboard')
+      return NextResponse.redirect(url)
+    }
+  } catch (error: any) {
+    console.error("[v0] Middleware: Auth error:", error?.message || error)
+    if (
+      request.nextUrl.pathname.startsWith("/dashboard") ||
+      request.nextUrl.pathname.startsWith("/admin")
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/login"
+      url.searchParams.set('error', 'auth_failed')
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

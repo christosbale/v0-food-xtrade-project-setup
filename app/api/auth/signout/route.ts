@@ -9,11 +9,10 @@ export async function GET() {
 
   if (error) {
     console.error('[v0] Logout error:', error)
-    return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))
+    return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL!))
   }
 
-  // Redirect to home page after logout
-  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'))
+  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL!))
 }
 
 export async function POST() {

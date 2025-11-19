@@ -20,28 +20,31 @@ function getRiskCategory(riskScore: number | null): 'low' | 'medium' | 'high' | 
   return 'low'
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function CompaniesListPage({
   searchParams,
 }: {
-  searchParams: { 
+  searchParams: Promise<{ // Changed to Promise for Next.js 16
     verification_status?: string
     subscription_plan?: string
     risk?: string
-  }
+  }>
 }) {
+  const params = await searchParams
+  
   const supabase = await createClient()
   
   let query = supabase
     .from('companies')
     .select('id, company_name, country, city, website, verification_status, verification_level, risk_score, subscription_plan, onboarding_completed, created_at, company_type')
   
-  // Apply filters from query params
-  if (searchParams.verification_status && searchParams.verification_status !== 'all') {
-    query = query.eq('verification_status', searchParams.verification_status)
+  if (params.verification_status && params.verification_status !== 'all') {
+    query = query.eq('verification_status', params.verification_status)
   }
   
-  if (searchParams.subscription_plan && searchParams.subscription_plan !== 'all') {
-    query = query.eq('subscription_plan', searchParams.subscription_plan)
+  if (params.subscription_plan && params.subscription_plan !== 'all') {
+    query = query.eq('subscription_plan', params.subscription_plan)
   }
   
   const { data: companies, error } = await query.order('created_at', { ascending: false })
@@ -51,9 +54,9 @@ export default async function CompaniesListPage({
   }
 
   let filteredCompanies = companies || []
-  if (searchParams.risk && searchParams.risk !== 'all') {
+  if (params.risk && params.risk !== 'all') {
     filteredCompanies = filteredCompanies.filter(c => 
-      getRiskCategory(c.risk_score) === searchParams.risk
+      getRiskCategory(c.risk_score) === params.risk
     )
   }
 
@@ -102,28 +105,28 @@ export default async function CompaniesListPage({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant={!searchParams.verification_status || searchParams.verification_status === 'all' ? 'default' : 'outline'}
+                  variant={!params.verification_status || params.verification_status === 'all' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?verification_status=all">All</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.verification_status === 'verified' ? 'default' : 'outline'}
+                  variant={params.verification_status === 'verified' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?verification_status=verified">Verified</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.verification_status === 'pending' ? 'default' : 'outline'}
+                  variant={params.verification_status === 'pending' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?verification_status=pending">Pending</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.verification_status === 'rejected' ? 'default' : 'outline'}
+                  variant={params.verification_status === 'rejected' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?verification_status=rejected">Rejected</Link>
@@ -136,28 +139,28 @@ export default async function CompaniesListPage({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant={!searchParams.subscription_plan || searchParams.subscription_plan === 'all' ? 'default' : 'outline'}
+                  variant={!params.subscription_plan || params.subscription_plan === 'all' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?subscription_plan=all">All</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.subscription_plan === 'basic' ? 'default' : 'outline'}
+                  variant={params.subscription_plan === 'basic' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?subscription_plan=basic">Basic</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.subscription_plan === 'pro' ? 'default' : 'outline'}
+                  variant={params.subscription_plan === 'pro' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?subscription_plan=pro">Pro</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.subscription_plan === 'premium' ? 'default' : 'outline'}
+                  variant={params.subscription_plan === 'premium' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?subscription_plan=premium">Premium</Link>
@@ -170,28 +173,28 @@ export default async function CompaniesListPage({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant={!searchParams.risk || searchParams.risk === 'all' ? 'default' : 'outline'}
+                  variant={!params.risk || params.risk === 'all' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?risk=all">All</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.risk === 'low' ? 'default' : 'outline'}
+                  variant={params.risk === 'low' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?risk=low">Low</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.risk === 'medium' ? 'default' : 'outline'}
+                  variant={params.risk === 'medium' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?risk=medium">Medium</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.risk === 'high' ? 'default' : 'outline'}
+                  variant={params.risk === 'high' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/companies?risk=high">High</Link>

@@ -17,16 +17,17 @@ export default async function DashboardPage() {
     newBuyers: 0,
   }
   let recentRFQs: any[] = []
+  let authError = false
 
   try {
     const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
     
     if (userError) {
-      console.error('Dashboard: User fetch error:', userError.message)
-      throw userError
+      console.error('[v0] Dashboard: Auth error:', userError.message)
+      authError = true
+    } else {
+      user = userData
     }
-    
-    user = userData
     
     if (user) {
       const { data: companyData, error: companyError } = await supabase
@@ -36,7 +37,7 @@ export default async function DashboardPage() {
         .maybeSingle()
 
       if (companyError) {
-        console.error('Dashboard: Company fetch error:', companyError.message)
+        console.error('[v0] Dashboard: Company fetch error:', companyError.message)
       } else {
         company = companyData
       }
@@ -93,8 +94,37 @@ export default async function DashboardPage() {
         stats.newBuyers = 0
       }
     }
-  } catch (error) {
-    console.error('[v0] Dashboard: Fatal error:', error)
+  } catch (error: any) {
+    console.error('[v0] Dashboard: Fatal error:', error?.message || error)
+    authError = true
+  }
+
+  if (authError) {
+    return (
+      <div className="space-y-8">
+        <Card className="border-[#E2E2E2] p-8">
+          <CardHeader className="p-0 pb-6">
+            <CardTitle className="text-2xl font-bold text-[#0D1117]">Authentication Error</CardTitle>
+            <CardDescription className="text-base text-[#7A7A7A]">
+              We're having trouble connecting to the authentication service
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0 space-y-6">
+            <p className="text-base text-[#0D1117]">
+              Please try refreshing the page or logging in again.
+            </p>
+            <div className="flex gap-4">
+              <Button asChild className="bg-[#0D1117] text-white hover:bg-[#0D1117]/90 font-bold px-6 py-3 h-auto rounded-md">
+                <Link href="/login">Go to Login</Link>
+              </Button>
+              <Button variant="outline" onClick={() => window.location.reload()} className="border-[#0D1117] text-[#0D1117] hover:bg-[#F6F6F6] font-bold px-6 py-3 h-auto rounded-md">
+                Refresh Page
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (!user) {
@@ -102,11 +132,16 @@ export default async function DashboardPage() {
       <div className="space-y-8">
         <Card className="border-[#E2E2E2] p-8">
           <CardHeader className="p-0 pb-6">
-            <CardTitle className="text-2xl font-bold text-[#0D1117]">Redirecting...</CardTitle>
+            <CardTitle className="text-2xl font-bold text-[#0D1117]">Please Log In</CardTitle>
             <CardDescription className="text-base text-[#7A7A7A]">
-              Please wait while we redirect you to login
+              You need to be logged in to access the dashboard
             </CardDescription>
           </CardHeader>
+          <CardContent className="p-0 space-y-6">
+            <Button asChild className="bg-[#0D1117] text-white hover:bg-[#0D1117]/90 font-bold px-6 py-3 h-auto rounded-md">
+              <Link href="/login">Go to Login</Link>
+            </Button>
+          </CardContent>
         </Card>
       </div>
     )

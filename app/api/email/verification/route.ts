@@ -5,7 +5,11 @@ export async function POST(request: NextRequest) {
   try {
     const { email, token } = await request.json()
     
-    const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/verify?token=${token}`
+    if (!process.env.NEXT_PUBLIC_SITE_URL) {
+      throw new Error('NEXT_PUBLIC_SITE_URL environment variable is required')
+    }
+    
+    const verificationUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/verify?token=${token}`
     
     await sendEmail({
       to: email,
@@ -24,7 +28,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function renderVerificationEmail(verifyUrl: string): Promise<string> {
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://foodxtrade.com'
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
   const LOGO_URL = `${SITE_URL}/logo-email.png`
   
   return `

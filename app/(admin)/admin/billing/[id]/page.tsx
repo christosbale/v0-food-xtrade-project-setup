@@ -8,14 +8,22 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { AdminBillingActions } from '@/components/admin/admin-billing-actions'
 
-export default async function AdminCompanyBillingPage({ params }: { params: { id: string } }) {
+export const dynamic = 'force-dynamic'
+
+export default async function AdminCompanyBillingPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> // Changed to Promise for Next.js 16 compatibility
+}) {
+  const { id } = await params
+  
   const supabase = await createClient()
   
   // Fetch company
   const { data: company } = await supabase
     .from('companies')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id) // Use awaited id
     .single()
 
   if (!company) {
@@ -26,7 +34,7 @@ export default async function AdminCompanyBillingPage({ params }: { params: { id
   const { data: subscriptionHistory } = await supabase
     .from('subscription_history')
     .select('*')
-    .eq('company_id', params.id)
+    .eq('company_id', id) // Use awaited id
     .order('created_at', { ascending: false })
 
   // Fetch current active subscription

@@ -1,17 +1,46 @@
 import { ProductForm } from '@/components/dashboard/product-form'
+import { createClient } from '@/lib/supabase/server'
+import { notFound, redirect } from 'next/navigation'
+import { getCurrentCompany } from '@/lib/auth/current-company'
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
-  // TODO: Fetch product data from API
+export const dynamic = 'force-dynamic'
+
+export default async function EditProductPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> // Changed to Promise for Next.js 16
+}) {
+  const { id } = await params
+  
+  const company = await getCurrentCompany()
+  
+  if (!company) {
+    redirect('/login?error=unauthorized')
+  }
+  
+  const supabase = await createClient()
+  
+  const { data: product, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .eq('company_id', company.id)
+    .single()
+  
+  if (error || !product) {
+    notFound()
+  }
+
   const productData = {
-    name: 'Organic Apples',
-    category: 'Fresh Fruits',
-    description: 'Premium quality organic apples sourced from certified farms.',
-    price: '2.50',
-    unit: 'kg',
-    minOrder: '100',
-    stock: '5000',
-    origin: 'United States',
-    certifications: ['Organic', 'FDA Approved'],
+    name: product.product_name,
+    category: product.category || '',
+    description: product.description || '',
+    price: product.min_order_price?.toString() || '',
+    unit: product.pricing_unit || 'kg',
+    minOrder: product.min_order_quantity?.toString() || '',
+    stock: product.available_quantity?.toString() || '',
+    origin: product.origin_country || '',
+    certifications: product.certifications || [],
   }
 
   return (
@@ -22,7 +51,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           Update product information
         </p>
       </div>
-      <ProductForm initialData={productData} productId={params.id} />
+      <ProductForm initialData={productData} productId={id} />
     </div>
   )
 }

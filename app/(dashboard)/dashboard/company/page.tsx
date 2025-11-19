@@ -11,9 +11,20 @@ import { VerificationComplianceForm } from '@/components/dashboard/verification-
 import { EditCompanyDialog } from '@/components/dashboard/edit-company-dialog'
 
 export default async function CompanyProfilePage() {
+  console.log('[v0] CompanyProfilePage: Rendering')
+  
   const session = await getCurrentCompany()
   
+  console.log('[v0] CompanyProfilePage: Session result', {
+    hasSession: !!session,
+    hasUser: !!session?.user,
+    hasCompany: !!session?.company,
+    userId: session?.user?.id,
+    companyId: session?.company?.id
+  })
+  
   if (!session || !session.company) {
+    console.log('[v0] CompanyProfilePage: No session or company, redirecting to login')
     redirect('/login')
   }
 
