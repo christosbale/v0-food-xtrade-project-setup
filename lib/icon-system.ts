@@ -45,7 +45,7 @@ export const ICON_CLASSES = {
   xlarge: 'h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8',
   
   // Menu/hamburger icon (20-24px, touch-friendly)
-  menu: 'h-5 w-5 md:h-6 md:w-6',
+  menu: 'h-7 w-7 md:h-8 md:w-8',
   
   // Status icons (verified, customs, etc.) - 16-18px
   status: 'h-4 w-4',
@@ -64,6 +64,11 @@ export const ICON_SPACING = {
 // Lucide icon configuration (applied globally)
 export const LUCIDE_CONFIG = {
   strokeWidth: 1.5,    // Minimal, professional stroke
+  absoluteStrokeWidth: false,
+} as const
+
+export const MENU_ICON_CONFIG = {
+  strokeWidth: 2.5,    // Bold, commanding stroke for menu icons
   absoluteStrokeWidth: false,
 } as const
 

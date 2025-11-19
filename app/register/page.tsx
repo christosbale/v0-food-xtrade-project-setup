@@ -10,7 +10,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex flex-1 items-center justify-center bg-muted/30 py-12">
-        <div className="w-full max-w-4xl space-y-6 px-4">
+        <div className="container-boxed w-full max-w-4xl space-y-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold">Join foodXtrade</h1>
             <p className="mt-2 text-muted-foreground">

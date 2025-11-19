@@ -6,7 +6,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { ICON_CLASSES } from '@/lib/icon-system'
+import { ICON_CLASSES, MENU_ICON_CONFIG } from '@/lib/icon-system'
 
 export function SiteHeader() {
   return (
@@ -85,10 +85,10 @@ export function SiteHeader() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-11 w-11 min-h-[44px] min-w-[44px]"
+                className="h-12 w-12 md:h-14 md:w-14 min-h-[48px] min-w-[48px]"
                 aria-label="Open navigation menu"
               >
-                <Menu className={ICON_CLASSES.menu} strokeWidth={1.5} />
+                <Menu className={ICON_CLASSES.menu} strokeWidth={MENU_ICON_CONFIG.strokeWidth} />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>

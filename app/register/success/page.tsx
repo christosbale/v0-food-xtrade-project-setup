@@ -10,7 +10,7 @@ export default function RegistrationSuccessPage() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex flex-1 items-center justify-center bg-muted/30 py-12">
-        <div className="container max-w-2xl px-4">
+        <div className="container-boxed w-full max-w-2xl">
           <Card>
             <CardHeader className="text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10">
