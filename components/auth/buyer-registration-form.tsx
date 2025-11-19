@@ -68,7 +68,9 @@ export function BuyerRegistrationForm() {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/products`,
+          emailRedirectTo: process.env.NEXT_PUBLIC_SITE_URL 
+            ? `${process.env.NEXT_PUBLIC_SITE_URL}/products`
+            : process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/products`,
           data: {
             company_name: formData.companyName,
             company_type: 'buyer',
