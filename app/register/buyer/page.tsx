@@ -6,11 +6,11 @@ export default function BuyerRegisterPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <main className="flex-1 bg-muted/30 py-12">
-        <div className="container max-w-2xl">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold">Buyer Registration</h1>
-            <p className="mt-2 text-muted-foreground">
+      <main className="flex flex-1 items-center justify-center bg-muted/30 py-12 md:py-16">
+        <div className="container-boxed w-full max-w-2xl space-y-6 md:space-y-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold md:text-3xl lg:text-4xl">Buyer Registration</h1>
+            <p className="mt-2 text-sm text-muted-foreground md:text-base">
               Create your account to start sourcing products
             </p>
           </div>

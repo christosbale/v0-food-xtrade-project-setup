@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { submitSupplierOnboarding } from '@/app/onboarding/supplier/actions'
 import { Check } from 'lucide-react'
+import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 
 interface SupplierOnboardingFormProps {
   initialPlan: 'basic' | 'pro' | 'premium'
@@ -36,17 +37,6 @@ const PLAN_DETAILS = {
     description: 'Complete market intelligence with AI-powered matching, price analytics, and full insights.',
   },
 }
-
-const PRODUCT_CATEGORIES = [
-  'Fresh Produce',
-  'Nuts & Kernels',
-  'Dried Fruits',
-  'Coffee & Cocoa',
-  'Grains & Pulses',
-  'Herbs & Spices',
-  'Oils & Fats',
-  'Other',
-]
 
 export function SupplierOnboardingForm({
   initialPlan,
@@ -277,16 +267,16 @@ export function SupplierOnboardingForm({
                 <div className="grid grid-cols-2 gap-3">
                   {PRODUCT_CATEGORIES.map((category) => (
                     <button
-                      key={category}
+                      key={category.id}
                       type="button"
-                      onClick={() => toggleCategory(category)}
+                      onClick={() => toggleCategory(category.label)}
                       className={`rounded-md border p-4 text-left text-sm transition-all ${
-                        formData.productCategories.includes(category)
+                        formData.productCategories.includes(category.label)
                           ? 'border-[#0D1117] bg-white text-[#0D1117] shadow-sm'
                           : 'border-[#E2E2E2] text-[#7A7A7A] hover:border-[#7A7A7A]'
                       }`}
                     >
-                      {category}
+                      {category.label}
                     </button>
                   ))}
                 </div>

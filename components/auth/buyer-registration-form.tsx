@@ -11,6 +11,7 @@ import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase/client'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { COUNTRIES } from '@/lib/countries'
 
 interface FormData {
   email: string
@@ -260,14 +261,11 @@ export function BuyerRegistrationForm() {
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="us">United States</SelectItem>
-                  <SelectItem value="uk">United Kingdom</SelectItem>
-                  <SelectItem value="ca">Canada</SelectItem>
-                  <SelectItem value="au">Australia</SelectItem>
-                  <SelectItem value="de">Germany</SelectItem>
-                  <SelectItem value="fr">France</SelectItem>
-                  <SelectItem value="in">India</SelectItem>
-                  <SelectItem value="cn">China</SelectItem>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country.value} value={country.value}>
+                      {country.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
