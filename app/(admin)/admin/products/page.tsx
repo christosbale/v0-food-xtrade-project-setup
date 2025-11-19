@@ -15,6 +15,36 @@ import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 import { CheckCircle2 } from 'lucide-react'
 import { formatPrice, type Currency } from '@/lib/utils/currency'
 
+interface SupabaseCompany {
+  company_name: string | null
+  verification_status: string | null
+  risk_score: number | null
+}
+
+interface SupabaseProductRaw {
+  id: string
+  product_name: string | null
+  category: string | null
+  origin_country: string | null
+  customs_status: string | null
+  price_per_unit: number | null
+  currency: string | null
+  company_id: string | null
+  companies: SupabaseCompany | SupabaseCompany[] | null
+}
+
+interface Product {
+  id: string
+  product_name: string | null
+  category: string | null
+  origin_country: string | null
+  customs_status: string | null
+  price_per_unit: number | null
+  currency: string | null
+  company_id: string | null
+  companies: SupabaseCompany | null
+}
+
 function getRiskCategory(riskScore: number | null): 'low' | 'medium' | 'high' | 'unknown' {
   if (riskScore === null) return 'unknown'
   if (riskScore < 40) return 'high'
@@ -71,72 +101,59 @@ export default async function AdminProductsPage({
     console.error('[v0] Error fetching products:', error)
   }
 
-  type SupabaseProduct = {
-    id: string
-    product_name: string | null
-    category: string | null
-    origin_country: string | null
-    customs_status: string | null
-    price_per_unit: number | null
-    currency: string | null
-    company_id: string | null
-    companies: {
-      company_name: string | null
-      verification_status: string | null
-      risk_score: number | null
-    } | null
+  const products: Product[] = (productsRaw || []).map((p: unknown) => {
+    const product = p as SupabaseProductRaw
+    return {
+      ...product,
+      companies: Array.isArray(product.companies) ? product.companies[0] || null : product.companies
+    }
+  })
+  
+  const getCompanyData = (companies: SupabaseCompany | null): SupabaseCompany | null => {
+    return companies
   }
 
-  let products = ((productsRaw || []) as unknown as SupabaseProduct[]).map(p => ({
-    ...p,
-    companies: Array.isArray(p.companies) ? p.companies[0] : p.companies
-  }))
-  
-  const getCompanyData = (companies: SupabaseProduct['companies']) => {
-    return companies || null
-  }
+  let filteredProducts = [...products]
 
   if (params.verification_status && params.verification_status !== 'all') {
-    products = products.filter(p => 
-      getCompanyData(p.companies)?.verification_status === params.verification_status
+    filteredProducts = filteredProducts.filter(p => 
+      p.companies?.verification_status === params.verification_status
     )
   }
   
   if (params.risk && params.risk !== 'all') {
-    products = products.filter(p => {
-      const company = getCompanyData(p.companies)
+    filteredProducts = filteredProducts.filter(p => {
+      const company = p.companies
       return getRiskCategory(company?.risk_score || null) === params.risk
     })
   }
   
   if (params.subcategory && params.subcategory !== 'all') {
-    products = products.filter(p => 
+    filteredProducts = filteredProducts.filter(p => 
       p.product_name?.toLowerCase().includes(params.subcategory?.toLowerCase() || '')
     )
   }
   
   if (params.sort) {
-    products = products.sort((a, b) => {
+    filteredProducts = filteredProducts.sort((a, b) => {
       switch (params.sort) {
         case 'price_asc':
           return (a.price_per_unit || 0) - (b.price_per_unit || 0)
         case 'price_desc':
           return (b.price_per_unit || 0) - (a.price_per_unit || 0)
         case 'risk_asc':
-          return (getCompanyData(a.companies)?.risk_score || 100) - (getCompanyData(b.companies)?.risk_score || 100)
+          return (a.companies?.risk_score || 100) - (b.companies?.risk_score || 100)
         case 'risk_desc':
-          return (getCompanyData(b.companies)?.risk_score || 0) - (getCompanyData(a.companies)?.risk_score || 0)
+          return (b.companies?.risk_score || 0) - (a.companies?.risk_score || 0)
         default:
           return 0
       }
     })
   }
 
-  // Get unique values for filters
-  const uniqueCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort()
-  const uniqueCustomsStatus = Array.from(new Set(products.map(p => p.customs_status).filter(Boolean))).sort()
+  const uniqueCategories = Array.from(new Set(filteredProducts.map(p => p.category).filter(Boolean) as string[])).sort()
+  const uniqueCustomsStatus = Array.from(new Set(filteredProducts.map(p => p.customs_status).filter(Boolean) as string[])).sort()
   
-  // Get category label helper
   const getCategoryLabel = (categoryId: string | null) => {
     if (!categoryId) return '—'
     const category = PRODUCT_CATEGORIES.find(c => c.id === categoryId)
@@ -156,14 +173,14 @@ export default async function AdminProductsPage({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-            <Badge variant="default">{products.length}</Badge>
+            <Badge variant="default">{filteredProducts.length}</Badge>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Verified Suppliers</CardTitle>
             <Badge variant="secondary">
-              {products.filter(p => getCompanyData(p.companies)?.verification_status === 'verified').length}
+              {filteredProducts.filter(p => p.companies?.verification_status === 'verified').length}
             </Badge>
           </CardHeader>
         </Card>
@@ -171,7 +188,7 @@ export default async function AdminProductsPage({
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">EU Cleared</CardTitle>
             <Badge variant="outline">
-              {products.filter(p => p.customs_status === 'eu_cleared').length}
+              {filteredProducts.filter(p => p.customs_status === 'eu_cleared').length}
             </Badge>
           </CardHeader>
         </Card>
@@ -339,11 +356,11 @@ export default async function AdminProductsPage({
         <CardHeader>
           <CardTitle>All Products</CardTitle>
           <CardDescription>
-            {products.length} {products.length === 1 ? 'product' : 'products'} found
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {products.length > 0 ? (
+          {filteredProducts.length > 0 ? (
             <>
               <div className="hidden lg:block overflow-x-auto">
                 <Table>
@@ -360,8 +377,8 @@ export default async function AdminProductsPage({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map((product) => {
-                      const company = getCompanyData(product.companies)
+                    {filteredProducts.map((product) => {
+                      const company = product.companies
                       const riskCategory = getRiskCategory(company?.risk_score || null)
                       
                       return (
@@ -405,12 +422,12 @@ export default async function AdminProductsPage({
                           <TableCell>
                             {product.price_per_unit ? (
                               <span className="font-medium">
-                                {formatPrice(product.price_per_unit, (product.currency as Currency) || 'EUR')}
+                                {formatPrice(product.price_per_unit, (product.currency || 'EUR') as Currency)}
                               </span>
                             ) : '—'}
                           </TableCell>
                           <TableCell>
-                            {company?.risk_score !== null ? (
+                            {company?.risk_score !== null && company?.risk_score !== undefined ? (
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{company.risk_score}</span>
                                 <Badge 
@@ -448,8 +465,8 @@ export default async function AdminProductsPage({
               </div>
 
               <div className="lg:hidden space-y-3">
-                {products.map((product) => {
-                  const company = getCompanyData(product.companies)
+                {filteredProducts.map((product) => {
+                  const company = product.companies
                   const riskCategory = getRiskCategory(company?.risk_score || null)
                   
                   return (
@@ -493,7 +510,7 @@ export default async function AdminProductsPage({
                             <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Price</p>
                             {product.price_per_unit ? (
                               <p className="font-medium text-[#0D1117]">
-                                {formatPrice(product.price_per_unit, (product.currency as Currency) || 'EUR')}
+                                {formatPrice(product.price_per_unit, (product.currency || 'EUR') as Currency)}
                               </p>
                             ) : (
                               <span className="text-[#7A7A7A]">—</span>
@@ -501,7 +518,7 @@ export default async function AdminProductsPage({
                           </div>
                           <div>
                             <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Risk Score</p>
-                            {company?.risk_score !== null ? (
+                            {company?.risk_score !== null && company?.risk_score !== undefined ? (
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-[#0D1117]">{company.risk_score}</span>
                                 <Badge 
