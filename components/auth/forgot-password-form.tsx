@@ -23,11 +23,23 @@ export function ForgotPasswordForm() {
     try {
       const supabase = createClient()
       
+      // Determine the correct redirect URL based on environment
+      const getRedirectUrl = () => {
+        // If NEXT_PUBLIC_SITE_URL is set (production), use it
+        if (process.env.NEXT_PUBLIC_SITE_URL) {
+          return `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`
+        }
+        // If in development with dev redirect URL, use it
+        if (process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL) {
+          return `${process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL}/reset-password`
+        }
+        // Fallback to current origin
+        return `${window.location.origin}/reset-password`
+      }
+      
       // Send password reset email
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: process.env.NEXT_PUBLIC_SITE_URL 
-          ? `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`
-          : process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/reset-password`,
+        redirectTo: getRedirectUrl(),
       })
 
       if (resetError) throw resetError
@@ -38,9 +50,8 @@ export function ForgotPasswordForm() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         })
-        console.log('[v0] Password reset email sent')
       } catch (emailError) {
-        console.error('[v0] Failed to send custom reset email:', emailError)
+        console.error('Failed to send custom reset email:', emailError)
         // Supabase already sent their email, so this is just a bonus
       }
 
