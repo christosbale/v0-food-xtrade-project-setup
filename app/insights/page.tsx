@@ -1,19 +1,10 @@
-'use client'
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, TrendingDown, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useState, useEffect } from 'react'
 import { AIMarketSummary } from '@/components/insights/ai-market-summary'
+import Link from 'next/link'
 
 interface TopCommodity {
   category: string
@@ -295,28 +286,38 @@ export default async function InsightsPage({
           {/* Time range filter */}
           <div className="flex items-center justify-center gap-4">
             <span className="text-body-large text-black/60">Time period:</span>
-            <Select defaultValue={timeRange.toString()}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">
-                  <a href="/insights?range=7" className="block w-full">
-                    Last 7 days
-                  </a>
-                </SelectItem>
-                <SelectItem value="30">
-                  <a href="/insights?range=30" className="block w-full">
-                    Last 30 days
-                  </a>
-                </SelectItem>
-                <SelectItem value="90">
-                  <a href="/insights?range=90" className="block w-full">
-                    Last 90 days
-                  </a>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Link
+                href="/insights?range=7"
+                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                  timeRange === 7
+                    ? 'border-[#FFB84D] bg-[#FFB84D] text-black font-bold'
+                    : 'border-border hover:border-[#FFB84D]'
+                }`}
+              >
+                Last 7 days
+              </Link>
+              <Link
+                href="/insights?range=30"
+                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                  timeRange === 30
+                    ? 'border-[#FFB84D] bg-[#FFB84D] text-black font-bold'
+                    : 'border-border hover:border-[#FFB84D]'
+                }`}
+              >
+                Last 30 days
+              </Link>
+              <Link
+                href="/insights?range=90"
+                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                  timeRange === 90
+                    ? 'border-[#FFB84D] bg-[#FFB84D] text-black font-bold'
+                    : 'border-border hover:border-[#FFB84D]'
+                }`}
+              >
+                Last 90 days
+              </Link>
+            </div>
           </div>
         </div>
         
