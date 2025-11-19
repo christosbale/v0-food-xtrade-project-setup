@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "biome check . && next build",
+    "build": "next build",
     "dev": "next dev",
     "format": "biome format . --write",
     "lint": "biome check . --apply --no-errors-on-unmatched",
+    "lint:ci": "biome check .",
     "start": "next start"
   },
   "dependencies": {

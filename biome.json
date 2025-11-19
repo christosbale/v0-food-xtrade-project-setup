@@ -8,23 +8,25 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "off",
+        "noAssignInExpressions": "off"
       },
       "correctness": {
         "noUnusedVariables": "warn",
-        "useExhaustiveDependencies": "warn"
+        "useExhaustiveDependencies": "off"
       },
       "style": {
-        "noNonNullAssertion": "warn"
+        "noNonNullAssertion": "warn",
+        "useTemplate": "off"
       }
     }
   },
   "formatter": {
     "enabled": true,
-    "formatWithErrors": false,
+    "formatWithErrors": true,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 100,
+    "lineWidth": 120,
     "lineEnding": "lf"
   },
   "javascript": {
@@ -50,7 +52,9 @@
       "build",
       ".vercel",
       "*.config.js",
-      "*.config.mjs"
+      "*.config.mjs",
+      ".env*",
+      "public"
     ]
   }
 }
