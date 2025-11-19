@@ -44,8 +44,7 @@ export const ICON_CLASSES = {
   // Extra large for hero sections (24-32px)
   xlarge: 'h-6 w-6 md:h-7 md:w-7 lg:h-8 lg:w-8',
   
-  // Menu/hamburger icon (20-24px, touch-friendly)
-  menu: 'h-7 w-7 md:h-8 md:w-8',
+  menu: 'h-9 w-9 md:h-11 md:w-11',
   
   // Status icons (verified, customs, etc.) - 16-18px
   status: 'h-4 w-4',
@@ -68,7 +67,7 @@ export const LUCIDE_CONFIG = {
 } as const
 
 export const MENU_ICON_CONFIG = {
-  strokeWidth: 2.5,    // Bold, commanding stroke for menu icons
+  strokeWidth: 3,    // Extra bold, commanding stroke for menu icons
   absoluteStrokeWidth: false,
 } as const
 

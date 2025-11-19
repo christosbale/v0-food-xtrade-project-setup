@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Menu } from 'lucide-react'
+import { AlignJustify } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -85,10 +85,14 @@ export function SiteHeader() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-12 w-12 md:h-14 md:w-14 min-h-[48px] min-w-[48px]"
+                className="h-14 w-14 md:h-16 md:w-16 min-h-[56px] min-w-[56px]"
                 aria-label="Open navigation menu"
               >
-                <Menu className={ICON_CLASSES.menu} strokeWidth={MENU_ICON_CONFIG.strokeWidth} />
+                <AlignJustify 
+                  className={ICON_CLASSES.menu} 
+                  strokeWidth={3} 
+                  color="#0D1117"
+                />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
