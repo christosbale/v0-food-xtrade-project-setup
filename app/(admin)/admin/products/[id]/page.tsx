@@ -9,12 +9,6 @@ import { notFound } from 'next/navigation'
 import { ProductModerationActions } from '@/components/admin/product-moderation-actions'
 import Image from 'next/image'
 
-type CompanyInfo = {
-  company_name: string
-  country: string
-  business_email: string
-} | null
-
 export default async function AdminProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params // Await params for Next.js 16 compatibility
   const supabase = await createClient()
@@ -37,16 +31,7 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
     notFound()
   }
 
-  type CompanyInfo = {
-    company_name: string
-    country: string
-    business_email: string
-  } | null
-
-  const productWithCompany = {
-    ...product,
-    companies: Array.isArray(product.companies) ? product.companies[0] : product.companies
-  } as typeof product & { companies: CompanyInfo }
+  const company = Array.isArray(product.companies) ? product.companies[0] : product.companies
 
   // Fetch product images
   const { data: images } = await supabase
@@ -71,10 +56,10 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
 
       {/* Status Badges */}
       <div className="flex items-center gap-2">
-        <Badge variant={productWithCompany.status === 'published' ? 'default' : 'secondary'}>
-          {productWithCompany.status}
+        <Badge variant={product.status === 'published' ? 'default' : 'secondary'}>
+          {product.status}
         </Badge>
-        {productWithCompany.reviewed_by && (
+        {product.reviewed_by && (
           <Badge className="bg-green-500">
             Reviewed
           </Badge>
@@ -117,32 +102,32 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label className="text-muted-foreground">Product Name</Label>
-              <p className="text-lg font-medium">{productWithCompany.product_name}</p>
+              <p className="text-lg font-medium">{product.product_name}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Category</Label>
-              <p className="text-lg font-medium">{productWithCompany.category}</p>
+              <p className="text-lg font-medium">{product.category}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Origin Country</Label>
-              <p className="text-lg font-medium">{productWithCompany.origin_country}</p>
+              <p className="text-lg font-medium">{product.origin_country}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Price</Label>
               <p className="text-lg font-medium">
-                ${productWithCompany.price_per_unit} per {productWithCompany.unit}
+                ${product.price_per_unit} per {product.unit}
               </p>
             </div>
             <div>
               <Label className="text-muted-foreground">Available Quantity</Label>
               <p className="text-lg font-medium">
-                {productWithCompany.available_quantity} {productWithCompany.unit}
+                {product.available_quantity} {product.unit}
               </p>
             </div>
             <div>
               <Label className="text-muted-foreground">Min Order Quantity</Label>
               <p className="text-lg font-medium">
-                {productWithCompany.min_order_quantity} {productWithCompany.unit}
+                {product.min_order_quantity} {product.unit}
               </p>
             </div>
           </div>
@@ -152,33 +137,33 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label className="text-muted-foreground">Incoterm</Label>
-              <p className="font-medium">{productWithCompany.incoterm}</p>
+              <p className="font-medium">{product.incoterm}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Customs Status</Label>
-              <p className="font-medium">{productWithCompany.customs_status}</p>
+              <p className="font-medium">{product.customs_status}</p>
             </div>
-            {productWithCompany.crop_year && (
+            {product.crop_year && (
               <div>
                 <Label className="text-muted-foreground">Crop Year</Label>
-                <p className="font-medium">{productWithCompany.crop_year}</p>
+                <p className="font-medium">{product.crop_year}</p>
               </div>
             )}
-            {productWithCompany.packaging && (
+            {product.packaging && (
               <div>
                 <Label className="text-muted-foreground">Packaging</Label>
-                <p className="font-medium">{productWithCompany.packaging}</p>
+                <p className="font-medium">{product.packaging}</p>
               </div>
             )}
           </div>
 
-          {productWithCompany.certifications && productWithCompany.certifications.length > 0 && (
+          {product.certifications && product.certifications.length > 0 && (
             <>
               <Separator />
               <div>
                 <Label className="text-muted-foreground">Certifications</Label>
                 <div className="flex gap-2 flex-wrap mt-2">
-                  {productWithCompany.certifications.map((cert: string) => (
+                  {product.certifications.map((cert: string) => (
                     <Badge key={cert} variant="outline">
                       {cert}
                     </Badge>
@@ -193,7 +178,7 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
           <div>
             <Label className="text-muted-foreground">Created At</Label>
             <p className="text-sm">
-              {new Date(productWithCompany.created_at).toLocaleDateString("en-US", {
+              {new Date(product.created_at).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
@@ -203,11 +188,11 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
             </p>
           </div>
 
-          {productWithCompany.reviewed_at && (
+          {product.reviewed_at && (
             <div>
               <Label className="text-muted-foreground">Reviewed At</Label>
               <p className="text-sm">
-                {new Date(productWithCompany.reviewed_at).toLocaleDateString("en-US", {
+                {new Date(product.reviewed_at).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -230,19 +215,19 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label className="text-muted-foreground">Company Name</Label>
-              <p className="font-medium">{productWithCompany.companies?.company_name}</p>
+              <p className="font-medium">{company?.company_name}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Country</Label>
-              <p className="font-medium">{productWithCompany.companies?.country}</p>
+              <p className="font-medium">{company?.country}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Email</Label>
-              <p className="font-medium">{productWithCompany.companies?.business_email}</p>
+              <p className="font-medium">{company?.business_email}</p>
             </div>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/admin/companies/${productWithCompany.company_id}`}>
+            <Link href={`/admin/companies/${product.company_id}`}>
               View Company Profile
             </Link>
           </Button>
@@ -250,23 +235,23 @@ export default async function AdminProductDetailPage({ params }: { params: Promi
       </Card>
 
       {/* Admin Notes if exists */}
-      {productWithCompany.admin_notes && (
+      {product.admin_notes && (
         <Card>
           <CardHeader>
             <CardTitle>Admin Notes</CardTitle>
             <CardDescription>Previous moderation notes</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm">{productWithCompany.admin_notes}</p>
+            <p className="text-sm">{product.admin_notes}</p>
           </CardContent>
         </Card>
       )}
 
       {/* Moderation Actions */}
       <ProductModerationActions
-        productId={productWithCompany.id}
-        isReviewed={!!productWithCompany.reviewed_by}
-        currentStatus={productWithCompany.status}
+        productId={product.id}
+        isReviewed={!!product.reviewed_by}
+        currentStatus={product.status}
       />
     </div>
   )

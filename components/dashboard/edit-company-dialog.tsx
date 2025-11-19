@@ -16,16 +16,7 @@ import { Label } from '@/components/ui/label'
 import { updateCompanyInfo } from '@/app/(dashboard)/dashboard/company/actions'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
-
-interface Company {
-  id: string
-  company_name: string
-  country?: string
-  city?: string
-  website?: string
-  business_email?: string
-  business_registration_number?: string
-}
+import type { Company } from '@/lib/types/database'
 
 interface EditCompanyDialogProps {
   company: Company
