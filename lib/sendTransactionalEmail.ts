@@ -41,17 +41,17 @@ export async function sendTransactionalEmail({
   switch (type) {
     case 'welcome':
       subject = 'Welcome to foodXtrade'
-      html = renderWelcomeEmail(`${SITE_URL}/dashboard`)
+      html = await renderWelcomeEmail(`${SITE_URL}/dashboard`)
       break
 
     case 'supplier_onboarding':
       subject = 'Your Supplier Account is Now Active'
-      html = renderSupplierOnboardingEmail(`${SITE_URL}/dashboard/products`)
+      html = await renderSupplierOnboardingEmail(`${SITE_URL}/dashboard/products`)
       break
 
     case 'rfq_match':
       subject = 'New RFQ Match on foodXtrade'
-      html = renderRfqMatchEmail({
+      html = await renderRfqMatchEmail({
         product: data?.product || 'Commodity',
         qty: data?.qty || '',
         country: data?.country || '',
@@ -62,7 +62,7 @@ export async function sendTransactionalEmail({
 
     case 'subscription':
       subject = 'Your Subscription Is Active'
-      html = renderSubscriptionConfirmationEmail({
+      html = await renderSubscriptionConfirmationEmail({
         plan: data?.plan || 'Supplier plan',
         dashboardUrl: `${SITE_URL}/dashboard`,
       })
@@ -70,7 +70,7 @@ export async function sendTransactionalEmail({
 
     case 'password_reset':
       subject = 'Reset Your Password'
-      html = renderPasswordResetEmail(data?.resetUrl || `${SITE_URL}/reset-password`)
+      html = await renderPasswordResetEmail(data?.resetUrl || `${SITE_URL}/reset-password`)
       break
 
     case 'product_updates':
@@ -100,7 +100,7 @@ export async function sendRfqConfirmationTransactional(params: {
   buyerName: string
 }) {
   const subject = 'RFQ Submitted Successfully'
-  const html = renderRfqConfirmationEmail({
+  const html = await renderRfqConfirmationEmail({
     product: params.product,
     qty: params.qty,
     buyerName: params.buyerName,

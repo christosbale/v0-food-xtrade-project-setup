@@ -3,7 +3,7 @@
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://foodxtrade.com'
 const LOGO_URL = `${SITE_URL}/logo-email.png`
 
-function baseLayout(title: string, contentHtml: string): string {
+async function baseLayout(title: string, contentHtml: string): Promise<string> {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -48,7 +48,7 @@ function baseLayout(title: string, contentHtml: string): string {
   `.trim()
 }
 
-export function renderWelcomeEmail(dashboardUrl: string): string {
+export async function renderWelcomeEmail(dashboardUrl: string): Promise<string> {
   const content = `
     <tr>
       <td style="font-size:28px; font-weight:600; color:#0D1117; padding-bottom:16px;">
@@ -69,10 +69,10 @@ export function renderWelcomeEmail(dashboardUrl: string): string {
       </td>
     </tr>
   `
-  return baseLayout('Welcome to foodXtrade', content)
+  return await baseLayout('Welcome to foodXtrade', content)
 }
 
-export function renderSupplierOnboardingEmail(uploadProductsUrl: string): string {
+export async function renderSupplierOnboardingEmail(uploadProductsUrl: string): Promise<string> {
   const content = `
     <tr>
       <td style="font-size:26px; font-weight:600; padding-bottom:16px; color:#0D1117;">
@@ -100,16 +100,16 @@ export function renderSupplierOnboardingEmail(uploadProductsUrl: string): string
       </td>
     </tr>
   `
-  return baseLayout('Your Supplier Account is Now Active', content)
+  return await baseLayout('Your Supplier Account is Now Active', content)
 }
 
-export function renderRfqMatchEmail(params: {
+export async function renderRfqMatchEmail(params: {
   product: string
   qty: string
   country: string
   customs: string
   rfqUrl: string
-}): string {
+}): Promise<string> {
   const content = `
     <tr>
       <td style="font-size:26px; font-weight:600; padding-bottom:16px; color:#0D1117;">
@@ -142,10 +142,10 @@ export function renderRfqMatchEmail(params: {
       </td>
     </tr>
   `
-  return baseLayout('New RFQ Match on foodXtrade', content)
+  return await baseLayout('New RFQ Match on foodXtrade', content)
 }
 
-export function renderPasswordResetEmail(resetUrl: string): string {
+export async function renderPasswordResetEmail(resetUrl: string): Promise<string> {
   const content = `
     <tr>
       <td style="font-size:26px; font-weight:600; padding-bottom:16px; color:#0D1117;">
@@ -166,13 +166,13 @@ export function renderPasswordResetEmail(resetUrl: string): string {
       </td>
     </tr>
   `
-  return baseLayout('Reset Your Password', content)
+  return await baseLayout('Reset Your Password', content)
 }
 
-export function renderSubscriptionConfirmationEmail(params: {
+export async function renderSubscriptionConfirmationEmail(params: {
   plan: string
   dashboardUrl: string
-}): string {
+}): Promise<string> {
   const content = `
     <tr>
       <td style="font-size:26px; font-weight:600; padding-bottom:16px; color:#0D1117;">
@@ -203,15 +203,15 @@ export function renderSubscriptionConfirmationEmail(params: {
       </td>
     </tr>
   `
-  return baseLayout('Your Subscription Is Active', content)
+  return await baseLayout('Your Subscription Is Active', content)
 }
 
-export function renderRfqConfirmationEmail(params: {
+export async function renderRfqConfirmationEmail(params: {
   product: string
   qty: string
   buyerName: string
   dashboardUrl: string
-}): string {
+}): Promise<string> {
   const content = `
     <tr>
       <td style="font-size:26px; font-weight:600; padding-bottom:16px; color:#0D1117;">
@@ -245,5 +245,5 @@ export function renderRfqConfirmationEmail(params: {
       </td>
     </tr>
   `
-  return baseLayout('RFQ Submitted Successfully', content)
+  return await baseLayout('RFQ Submitted Successfully', content)
 }

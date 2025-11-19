@@ -40,7 +40,7 @@ export async function sendWelcomeEmail(email: string, userType: 'buyer' | 'suppl
     ? `${SITE_URL}/dashboard`
     : `${SITE_URL}/products`
   
-  const html = renderWelcomeEmail(dashboardUrl)
+  const html = await renderWelcomeEmail(dashboardUrl)
   return sendEmail(email, 'Welcome to foodXtrade', html)
 }
 
@@ -50,7 +50,7 @@ export async function sendSupplierOnboardingCompleteEmail(
   plan: string
 ) {
   const uploadProductsUrl = `${SITE_URL}/dashboard/products`
-  const html = renderSupplierOnboardingEmail(uploadProductsUrl)
+  const html = await renderSupplierOnboardingEmail(uploadProductsUrl)
   return sendEmail(email, 'Your Supplier Account is Now Active', html)
 }
 
@@ -65,7 +65,7 @@ export async function sendRFQMatchNotificationEmail(
   }
 ) {
   const rfqUrl = `${SITE_URL}/dashboard/rfqs?id=${params.rfqId}`
-  const html = renderRfqMatchEmail({
+  const html = await renderRfqMatchEmail({
     product: params.product,
     qty: params.qty,
     country: params.country,
@@ -84,7 +84,7 @@ export async function sendRFQConfirmationEmail(
   }
 ) {
   const dashboardUrl = `${SITE_URL}/dashboard/rfqs`
-  const html = renderRfqConfirmationEmail({
+  const html = await renderRfqConfirmationEmail({
     product: params.product,
     qty: params.qty,
     buyerName: params.buyerName,
@@ -95,7 +95,7 @@ export async function sendRFQConfirmationEmail(
 
 export async function sendPasswordResetEmail(email: string, resetToken: string) {
   const resetUrl = `${SITE_URL}/reset-password?token=${resetToken}`
-  const html = renderPasswordResetEmail(resetUrl)
+  const html = await renderPasswordResetEmail(resetUrl)
   return sendEmail(email, 'Reset Your Password', html)
 }
 
@@ -104,7 +104,7 @@ export async function sendSubscriptionConfirmationEmail(
   plan: string
 ) {
   const dashboardUrl = `${SITE_URL}/dashboard`
-  const html = renderSubscriptionConfirmationEmail({
+  const html = await renderSubscriptionConfirmationEmail({
     plan,
     dashboardUrl,
   })
