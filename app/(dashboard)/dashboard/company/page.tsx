@@ -64,7 +64,7 @@ export default async function CompanyProfilePage() {
   ]
 
   const verificationStatus = company.verification_status || 'pending'
-  const verificationLevel = (company.verification_level as string | null | undefined) // 'basic' | 'trusted' | 'premium'
+  const verificationLevel = company.verification_level as 'basic' | 'trusted' | 'premium' | null
   const verifiedAt = company.verified_at
   const riskScore = company.risk_score
 
