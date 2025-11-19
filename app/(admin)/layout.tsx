@@ -103,7 +103,9 @@ export default async function AdminLayout({
 
         {/* Page content - massive whitespace */}
         <main className="flex-1 overflow-y-auto bg-white">
-          {children}
+          <div className="px-8 py-6 sm:px-12 sm:py-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>

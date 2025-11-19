@@ -23,7 +23,7 @@ export default function HomePage() {
                 <Button 
                   asChild 
                   size="lg" 
-                  className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold h-12 sm:h-14 px-6 sm:px-8 rounded-md shadow-sm text-[15px] sm:text-[16px]"
+                  className="w-full sm:w-auto bg-[#0D1117] text-white hover:bg-[#0D1117]/90 font-bold h-12 sm:h-14 px-6 sm:px-8 rounded-md shadow-sm text-[15px] sm:text-[16px]"
                 >
                   <Link href="/products">
                     Explore Marketplace <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -33,7 +33,7 @@ export default function HomePage() {
                   asChild 
                   size="lg" 
                   variant="outline"
-                  className="w-full sm:w-auto bg-white border-2 border-primary text-primary hover:bg-muted font-bold h-12 sm:h-14 px-6 sm:px-8 rounded-md text-[15px] sm:text-[16px]"
+                  className="w-full sm:w-auto bg-white border-2 border-[#0D1117] text-[#0D1117] hover:bg-[#F6F6F6] font-bold h-12 sm:h-14 px-6 sm:px-8 rounded-md text-[15px] sm:text-[16px]"
                 >
                   <Link href="/suppliers">
                     For Suppliers

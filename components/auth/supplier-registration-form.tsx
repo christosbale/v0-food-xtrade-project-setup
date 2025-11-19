@@ -15,7 +15,7 @@ import { createBrowserClient } from '@/lib/supabase/client'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { COUNTRIES } from '@/lib/countries'
 
-type Step = 1 | 2 | 3 | 4
+type Step = 1 | 2 | 3 | 4 | 5
 
 interface FormData {
   // Step 1: Account
@@ -38,7 +38,10 @@ interface FormData {
   productCategories: string[]
   certifications: string
   
-  // Step 4: Documents
+  // Step 4: Plan Selection
+  selectedPlan: 'basic' | 'pro' | 'premium'
+  
+  // Step 5: Documents (previously step 4)
   businessLicense: File | null
   taxCertificate: File | null
   qualityCertificates: File | null
@@ -67,15 +70,16 @@ export function SupplierRegistrationForm() {
     yearsInBusiness: '',
     productCategories: [],
     certifications: '',
+    selectedPlan: 'basic',
     businessLicense: null,
     taxCertificate: null,
     qualityCertificates: null,
   })
 
-  const progress = (currentStep / 4) * 100
+  const progress = (currentStep / 5) * 100
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep((currentStep + 1) as Step)
     }
   }
@@ -96,6 +100,18 @@ export function SupplierRegistrationForm() {
 
       if (formData.password !== formData.confirmPassword) {
         setError('Passwords do not match')
+        setIsLoading(false)
+        return
+      }
+
+      if (!formData.businessLicense || !formData.taxCertificate) {
+        setError('Please upload required documents (Business License and Tax Certificate)')
+        setIsLoading(false)
+        return
+      }
+
+      if (!formData.selectedPlan) {
+        setError('Please select a subscription plan')
         setIsLoading(false)
         return
       }
@@ -157,7 +173,7 @@ export function SupplierRegistrationForm() {
           website: formData.website || null,
           business_email: formData.email,
           verification_status: 'pending',
-          subscription_tier: 'basic',
+          subscription_tier: formData.selectedPlan,
         })
         .select()
         .single()
@@ -192,7 +208,6 @@ export function SupplierRegistrationForm() {
         console.log('[v0] Welcome email sent:', welcomeResponse.ok)
       } catch (emailError) {
         console.error('[v0] Failed to send welcome email:', emailError)
-        // Don't fail registration if email fails
       }
       
       router.push('/register/success')
@@ -214,11 +229,27 @@ export function SupplierRegistrationForm() {
     setFormData({ ...formData, productCategories: categories })
   }
 
+  const getPlanPrice = (plan: 'basic' | 'pro' | 'premium') => {
+    switch (plan) {
+      case 'basic': return '€49'
+      case 'pro': return '€99'
+      case 'premium': return '€199'
+    }
+  }
+
+  const getPlanDescription = (plan: 'basic' | 'pro' | 'premium') => {
+    switch (plan) {
+      case 'basic': return 'Perfect for small exporters & first-time suppliers'
+      case 'pro': return 'For active exporters & mid-size processors'
+      case 'premium': return 'For large exporters, traders & brokers'
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">Step {currentStep} of 4</span>
+          <span className="font-medium">Step {currentStep} of 5</span>
           <span className="text-muted-foreground">{progress.toFixed(0)}% Complete</span>
         </div>
         <Progress value={progress} />
@@ -457,6 +488,144 @@ export function SupplierRegistrationForm() {
         {currentStep === 4 && (
           <Card>
             <CardHeader>
+              <CardTitle>Choose Your Plan</CardTitle>
+              <CardDescription>
+                Select the plan that best fits your business needs
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4">
+                {/* Basic Plan */}
+                <div
+                  onClick={() => setFormData({ ...formData, selectedPlan: 'basic' })}
+                  className={`cursor-pointer rounded-lg border-2 p-6 transition-all ${
+                    formData.selectedPlan === 'basic'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground mb-1">Basic</h3>
+                      <p className="text-sm text-muted-foreground">Starter Supplier</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-foreground">€49</p>
+                      <p className="text-sm text-muted-foreground">/ month</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {getPlanDescription('basic')}
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Company profile & product listings</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Access to RFQs (receive & respond)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Basic market overview</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Pro Plan */}
+                <div
+                  onClick={() => setFormData({ ...formData, selectedPlan: 'pro' })}
+                  className={`cursor-pointer rounded-lg border-2 p-6 transition-all ${
+                    formData.selectedPlan === 'pro'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground mb-1">Pro</h3>
+                      <p className="text-sm text-muted-foreground">Growth Supplier</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-foreground">€99</p>
+                      <p className="text-sm text-muted-foreground">/ month</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {getPlanDescription('pro')}
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Everything in Basic, plus:</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Full Market Insights with charts</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>AI RFQ matching with explanations</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Premium Plan */}
+                <div
+                  onClick={() => setFormData({ ...formData, selectedPlan: 'premium' })}
+                  className={`cursor-pointer rounded-lg border-2 p-6 transition-all ${
+                    formData.selectedPlan === 'premium'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground mb-1">Premium</h3>
+                      <p className="text-sm text-muted-foreground">Intelligence Supplier</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-foreground">€199</p>
+                      <p className="text-sm text-muted-foreground">/ month</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {getPlanDescription('premium')}
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Everything in Pro, plus:</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Full AI Market Summary reports</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Detailed RFQ AI explanations</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                      <span>Maximum platform visibility</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-muted p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  You can change your plan at any time from your dashboard. All plans include a 14-day trial period.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {currentStep === 5 && (
+          <Card>
+            <CardHeader>
               <CardTitle>Document Upload</CardTitle>
               <CardDescription>
                 Upload required documents for verification
@@ -547,7 +716,7 @@ export function SupplierRegistrationForm() {
           ) : (
             <div />
           )}
-          {currentStep < 4 ? (
+          {currentStep < 5 ? (
             <Button type="button" onClick={handleNext}>
               Next Step
             </Button>

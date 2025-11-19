@@ -236,7 +236,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           
           <div className="flex items-center gap-3 shrink-0">
             {isOwner ? (
-              <Link href={`/dashboard/products/${product.id}/edit`}>
+              <Link href={`/dashboard/products?editing=${product.id}`}>
                 <Button className="bg-[#0D1117] text-white font-bold hover:bg-[#0D1117]/90 h-auto py-3 px-6">
                   <Edit className="h-4 w-4 mr-2" />
                   Edit product

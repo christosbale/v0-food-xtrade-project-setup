@@ -22,10 +22,11 @@ export default async function DashboardPage() {
     const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
     
     if (userError) {
-      console.error('[v0] Dashboard: User fetch error:', userError)
-    } else {
-      user = userData
+      console.error('Dashboard: User fetch error:', userError.message)
+      throw userError
     }
+    
+    user = userData
     
     if (user) {
       const { data: companyData, error: companyError } = await supabase
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
         .maybeSingle()
 
       if (companyError) {
-        console.error('[v0] Dashboard: Company fetch error:', companyError)
+        console.error('Dashboard: Company fetch error:', companyError.message)
       } else {
         company = companyData
       }
@@ -101,9 +102,9 @@ export default async function DashboardPage() {
       <div className="space-y-8">
         <Card className="border-[#E2E2E2] p-8">
           <CardHeader className="p-0 pb-6">
-            <CardTitle className="text-2xl font-bold text-[#0D1117]">Loading Dashboard...</CardTitle>
+            <CardTitle className="text-2xl font-bold text-[#0D1117]">Redirecting...</CardTitle>
             <CardDescription className="text-base text-[#7A7A7A]">
-              Please wait while we load your account
+              Please wait while we redirect you to login
             </CardDescription>
           </CardHeader>
         </Card>

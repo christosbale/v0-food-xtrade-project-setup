@@ -10,10 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
 export default async function UsersPage() {
   const supabase = await createClient()
+  const supabaseAdmin = createAdminClient()
   
   const { data: users } = await supabase
     .from('user_profiles')
@@ -24,15 +26,14 @@ export default async function UsersPage() {
     `)
     .order('created_at', { ascending: false })
 
-  // For each user, get their company and auth data
   const usersWithDetails = await Promise.all(
     (users || []).map(async (user) => {
-      const { data: authUser } = await supabase.auth.admin.getUserById(user.id)
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(user.id)
       const { data: company } = await supabase
         .from('companies')
         .select('company_name, company_type')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
       
       return {
         ...user,

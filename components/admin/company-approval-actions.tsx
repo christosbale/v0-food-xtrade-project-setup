@@ -51,9 +51,8 @@ export function CompanyApprovalActions({
         description: `The company has been verified and can now access the platform. ${result.vatMessage}`,
       })
       
-      // Wait a moment for the toast to show, then navigate
       setTimeout(() => {
-        router.push('/admin/companies/(list)/pending')
+        router.push('/admin/companies-pending')
         router.refresh()
       }, 1000)
     } catch (error) {
@@ -92,9 +91,8 @@ export function CompanyApprovalActions({
         description: 'The company has been notified and asked to provide more information.',
       })
       
-      // Wait a moment for the toast to show, then navigate
       setTimeout(() => {
-        router.push('/admin/companies/(list)/pending')
+        router.push('/admin/companies-pending')
         router.refresh()
       }, 1000)
     } catch (error) {

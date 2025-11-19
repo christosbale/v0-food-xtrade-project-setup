@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { PasswordChangeForm } from '@/components/settings/password-change-form'
 import { NotificationSettings } from '@/components/settings/notification-settings'
 import { ProfileSettingsForm } from '@/components/settings/profile-settings-form'
+import { AccountTypeSwitcher } from '@/components/settings/account-type-switcher'
 
 export default async function SettingsPage() {
   const session = await getCurrentCompany()
@@ -65,6 +66,15 @@ export default async function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Account Type Switcher */}
+      {company && !company.can_sell && (
+        <AccountTypeSwitcher 
+          currentType={company.company_type} 
+          canSell={company.can_sell || false}
+          currentTier={company.subscription_tier || 'free'}
+        />
+      )}
 
       {/* Profile Settings */}
       <Card>
