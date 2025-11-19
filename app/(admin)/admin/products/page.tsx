@@ -25,15 +25,17 @@ function getRiskCategory(riskScore: number | null): 'low' | 'medium' | 'high' | 
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: { 
+  searchParams: Promise<{ 
     category?: string
     subcategory?: string
     customs_status?: string
     verification_status?: string
     risk?: string
     sort?: 'price_asc' | 'price_desc' | 'risk_asc' | 'risk_desc'
-  }
+  }>
 }) {
+  const params = await searchParams
+  
   const supabase = await createClient()
   
   let query = supabase
@@ -55,12 +57,12 @@ export default async function AdminProductsPage({
     `)
     .eq('status', 'published')
   
-  if (searchParams.category && searchParams.category !== 'all') {
-    query = query.eq('category', searchParams.category)
+  if (params.category && params.category !== 'all') {
+    query = query.eq('category', params.category)
   }
   
-  if (searchParams.customs_status && searchParams.customs_status !== 'all') {
-    query = query.eq('customs_status', searchParams.customs_status)
+  if (params.customs_status && params.customs_status !== 'all') {
+    query = query.eq('customs_status', params.customs_status)
   }
   
   const { data: productsRaw, error } = await query
@@ -69,37 +71,64 @@ export default async function AdminProductsPage({
     console.error('[v0] Error fetching products:', error)
   }
 
-  let products = productsRaw || []
-  
-  if (searchParams.verification_status && searchParams.verification_status !== 'all') {
-    products = products.filter(p => 
-      p.companies?.verification_status === searchParams.verification_status
-    )
-  }
-  
-  if (searchParams.risk && searchParams.risk !== 'all') {
-    products = products.filter(p => 
-      getRiskCategory(p.companies?.risk_score || null) === searchParams.risk
-    )
+  type SupabaseProduct = {
+    id: string
+    product_name: string | null
+    category: string | null
+    origin_country: string | null
+    customs_status: string | null
+    price_per_unit: number | null
+    currency: string | null
+    company_id: string | null
+    companies: {
+      company_name: string | null
+      verification_status: string | null
+      risk_score: number | null
+    } | {
+      company_name: string | null
+      verification_status: string | null
+      risk_score: number | null
+    }[] | null
   }
 
-  if (searchParams.subcategory && searchParams.subcategory !== 'all') {
+  let products = (productsRaw as any as SupabaseProduct[]) || []
+  
+  const getCompanyData = (companies: SupabaseProduct['companies']) => {
+    if (!companies) return null
+    if (Array.isArray(companies)) return companies[0] || null
+    return companies
+  }
+  
+  if (params.verification_status && params.verification_status !== 'all') {
     products = products.filter(p => 
-      p.product_name?.toLowerCase().includes(searchParams.subcategory?.toLowerCase() || '')
+      getCompanyData(p.companies)?.verification_status === params.verification_status
     )
   }
   
-  if (searchParams.sort) {
+  if (params.risk && params.risk !== 'all') {
+    products = products.filter(p => {
+      const company = getCompanyData(p.companies)
+      return getRiskCategory(company?.risk_score || null) === params.risk
+    })
+  }
+  
+  if (params.subcategory && params.subcategory !== 'all') {
+    products = products.filter(p => 
+      p.product_name?.toLowerCase().includes(params.subcategory?.toLowerCase() || '')
+    )
+  }
+  
+  if (params.sort) {
     products = products.sort((a, b) => {
-      switch (searchParams.sort) {
+      switch (params.sort) {
         case 'price_asc':
           return (a.price_per_unit || 0) - (b.price_per_unit || 0)
         case 'price_desc':
           return (b.price_per_unit || 0) - (a.price_per_unit || 0)
         case 'risk_asc':
-          return (a.companies?.risk_score || 100) - (b.companies?.risk_score || 100)
+          return (getCompanyData(a.companies)?.risk_score || 100) - (getCompanyData(b.companies)?.risk_score || 100)
         case 'risk_desc':
-          return (b.companies?.risk_score || 0) - (a.companies?.risk_score || 0)
+          return (getCompanyData(b.companies)?.risk_score || 0) - (getCompanyData(a.companies)?.risk_score || 0)
         default:
           return 0
       }
@@ -137,7 +166,7 @@ export default async function AdminProductsPage({
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Verified Suppliers</CardTitle>
             <Badge variant="secondary">
-              {products.filter(p => p.companies?.verification_status === 'verified').length}
+              {products.filter(p => getCompanyData(p.companies)?.verification_status === 'verified').length}
             </Badge>
           </CardHeader>
         </Card>
@@ -163,7 +192,7 @@ export default async function AdminProductsPage({
                 <div className="flex gap-2 flex-wrap">
                   <Button
                     size="sm"
-                    variant={!searchParams.category || searchParams.category === 'all' ? 'default' : 'outline'}
+                    variant={!params.category || params.category === 'all' ? 'default' : 'outline'}
                     asChild
                   >
                     <Link href="/admin/products?category=all">All</Link>
@@ -172,7 +201,7 @@ export default async function AdminProductsPage({
                     <Button
                       key={cat}
                       size="sm"
-                      variant={searchParams.category === cat ? 'default' : 'outline'}
+                      variant={params.category === cat ? 'default' : 'outline'}
                       asChild
                     >
                       <Link href={`/admin/products?category=${cat}`}>
@@ -190,7 +219,7 @@ export default async function AdminProductsPage({
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    variant={!searchParams.customs_status || searchParams.customs_status === 'all' ? 'default' : 'outline'}
+                    variant={!params.customs_status || params.customs_status === 'all' ? 'default' : 'outline'}
                     asChild
                   >
                     <Link href="/admin/products?customs_status=all">All</Link>
@@ -199,7 +228,7 @@ export default async function AdminProductsPage({
                     <Button
                       key={status}
                       size="sm"
-                      variant={searchParams.customs_status === status ? 'default' : 'outline'}
+                      variant={params.customs_status === status ? 'default' : 'outline'}
                       asChild
                     >
                       <Link href={`/admin/products?customs_status=${status}`}>
@@ -216,21 +245,21 @@ export default async function AdminProductsPage({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant={!searchParams.verification_status || searchParams.verification_status === 'all' ? 'default' : 'outline'}
+                  variant={!params.verification_status || params.verification_status === 'all' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?verification_status=all">All</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.verification_status === 'verified' ? 'default' : 'outline'}
+                  variant={params.verification_status === 'verified' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?verification_status=verified">Verified</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.verification_status === 'pending' ? 'default' : 'outline'}
+                  variant={params.verification_status === 'pending' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?verification_status=pending">Pending</Link>
@@ -243,28 +272,28 @@ export default async function AdminProductsPage({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant={!searchParams.risk || searchParams.risk === 'all' ? 'default' : 'outline'}
+                  variant={!params.risk || params.risk === 'all' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?risk=all">All</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.risk === 'low' ? 'default' : 'outline'}
+                  variant={params.risk === 'low' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?risk=low">Low</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.risk === 'medium' ? 'default' : 'outline'}
+                  variant={params.risk === 'medium' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?risk=medium">Medium</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.risk === 'high' ? 'default' : 'outline'}
+                  variant={params.risk === 'high' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?risk=high">High</Link>
@@ -277,28 +306,28 @@ export default async function AdminProductsPage({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  variant={searchParams.sort === 'price_asc' ? 'default' : 'outline'}
+                  variant={params.sort === 'price_asc' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?sort=price_asc">Price ↑</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.sort === 'price_desc' ? 'default' : 'outline'}
+                  variant={params.sort === 'price_desc' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?sort=price_desc">Price ↓</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.sort === 'risk_asc' ? 'default' : 'outline'}
+                  variant={params.sort === 'risk_asc' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?sort=risk_asc">Risk ↑</Link>
                 </Button>
                 <Button
                   size="sm"
-                  variant={searchParams.sort === 'risk_desc' ? 'default' : 'outline'}
+                  variant={params.sort === 'risk_desc' ? 'default' : 'outline'}
                   asChild
                 >
                   <Link href="/admin/products?sort=risk_desc">Risk ↓</Link>
@@ -335,7 +364,7 @@ export default async function AdminProductsPage({
                   </TableHeader>
                   <TableBody>
                     {products.map((product) => {
-                      const company = product.companies
+                      const company = getCompanyData(product.companies)
                       const riskCategory = getRiskCategory(company?.risk_score || null)
                       
                       return (
@@ -423,7 +452,7 @@ export default async function AdminProductsPage({
 
               <div className="lg:hidden space-y-3">
                 {products.map((product) => {
-                  const company = product.companies
+                  const company = getCompanyData(product.companies)
                   const riskCategory = getRiskCategory(company?.risk_score || null)
                   
                   return (
