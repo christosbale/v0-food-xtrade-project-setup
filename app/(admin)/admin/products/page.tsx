@@ -318,105 +318,200 @@ export default async function AdminProductsPage({
         </CardHeader>
         <CardContent>
           {products.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product Title</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Origin</TableHead>
-                  <TableHead>Customs</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Risk Score</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product Title</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Origin</TableHead>
+                      <TableHead>Customs</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Risk Score</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((product) => {
+                      const company = product.companies
+                      const riskCategory = getRiskCategory(company?.risk_score || null)
+                      
+                      return (
+                        <TableRow 
+                          key={product.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => window.location.href = `/products/${product.id}`}
+                        >
+                          <TableCell className="font-medium max-w-[200px] truncate">
+                            <Link href={`/products/${product.id}`} className="hover:underline">
+                              {product.product_name}
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Link 
+                                href={`/admin/companies/${product.company_id}`}
+                                className="hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {company?.company_name || '—'}
+                              </Link>
+                              {company?.verification_status === 'verified' && (
+                                <Badge variant="verified" className="text-xs">
+                                  ✓
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm">{getCategoryLabel(product.category)}</span>
+                          </TableCell>
+                          <TableCell>{product.origin_country || '—'}</TableCell>
+                          <TableCell>
+                            {product.customs_status ? (
+                              <Badge variant="customs" className="capitalize">
+                                {product.customs_status.replace('_', ' ')}
+                              </Badge>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {product.price_per_unit ? (
+                              <span className="font-medium">
+                                {formatPrice(product.price_per_unit, product.currency || 'EUR')}
+                              </span>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {company?.risk_score !== null ? (
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{company.risk_score}</span>
+                                <Badge 
+                                  variant={
+                                    riskCategory === 'low' ? 'risk-low' :
+                                    riskCategory === 'medium' ? 'risk-medium' :
+                                    riskCategory === 'high' ? 'risk-high' :
+                                    'outline'
+                                  }
+                                  className="text-xs capitalize"
+                                >
+                                  {riskCategory}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              asChild
+                            >
+                              <Link href={`/products/${product.id}`}>
+                                View
+                              </Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="lg:hidden space-y-3">
                 {products.map((product) => {
                   const company = product.companies
                   const riskCategory = getRiskCategory(company?.risk_score || null)
                   
                   return (
-                    <TableRow 
-                      key={product.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => window.location.href = `/products/${product.id}`}
-                    >
-                      <TableCell className="font-medium max-w-[200px] truncate">
-                        <Link href={`/products/${product.id}`} className="hover:underline">
-                          {product.product_name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Link 
-                            href={`/admin/companies/${product.company_id}`}
-                            className="hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {company?.company_name || '—'}
-                          </Link>
-                          {company?.verification_status === 'verified' && (
-                            <Badge variant="verified" className="text-xs">
-                              ✓
+                    <Card key={product.id} className="border border-[#E2E2E2]">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <Link 
+                              href={`/products/${product.id}`}
+                              className="font-semibold text-[#0D1117] hover:underline block"
+                            >
+                              {product.product_name}
+                            </Link>
+                            <Link 
+                              href={`/admin/companies/${product.company_id}`}
+                              className="text-sm text-[#7A7A7A] hover:underline flex items-center gap-1 mt-0.5"
+                            >
+                              {company?.company_name || '—'}
+                              {company?.verification_status === 'verified' && (
+                                <Badge variant="verified" className="text-xs ml-1">✓</Badge>
+                              )}
+                            </Link>
+                          </div>
+                          {product.customs_status && (
+                            <Badge variant="customs" className="capitalize text-xs flex-shrink-0">
+                              {product.customs_status.replace('_', ' ')}
                             </Badge>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm">{getCategoryLabel(product.category)}</span>
-                      </TableCell>
-                      <TableCell>{product.origin_country || '—'}</TableCell>
-                      <TableCell>
-                        {product.customs_status ? (
-                          <Badge variant="customs" className="capitalize">
-                            {product.customs_status.replace('_', ' ')}
-                          </Badge>
-                        ) : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {product.price_per_unit ? (
-                          <span className="font-medium">
-                            {formatPrice(product.price_per_unit, product.currency || 'EUR')}
-                          </span>
-                        ) : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {company?.risk_score !== null ? (
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{company.risk_score}</span>
-                            <Badge 
-                              variant={
-                                riskCategory === 'low' ? 'risk-low' :
-                                riskCategory === 'medium' ? 'risk-medium' :
-                                riskCategory === 'high' ? 'risk-high' :
-                                'outline'
-                              }
-                              className="text-xs capitalize"
-                            >
-                              {riskCategory}
-                            </Badge>
+
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Category</p>
+                            <p className="text-[#0D1117]">{getCategoryLabel(product.category)}</p>
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Origin</p>
+                            <p className="text-[#0D1117]">{product.origin_country || '—'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Price</p>
+                            {product.price_per_unit ? (
+                              <p className="font-medium text-[#0D1117]">
+                                {formatPrice(product.price_per_unit, product.currency || 'EUR')}
+                              </p>
+                            ) : (
+                              <span className="text-[#7A7A7A]">—</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Risk Score</p>
+                            {company?.risk_score !== null ? (
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-[#0D1117]">{company.risk_score}</span>
+                                <Badge 
+                                  variant={
+                                    riskCategory === 'low' ? 'risk-low' :
+                                    riskCategory === 'medium' ? 'risk-medium' :
+                                    riskCategory === 'high' ? 'risk-high' :
+                                    'outline'
+                                  }
+                                  className="text-xs capitalize"
+                                >
+                                  {riskCategory}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <span className="text-[#7A7A7A]">—</span>
+                            )}
+                          </div>
+                        </div>
+
                         <Button
                           size="sm"
                           variant="outline"
+                          className="w-full mt-2"
                           asChild
                         >
                           <Link href={`/products/${product.id}`}>
-                            View
+                            View Product
                           </Link>
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </CardContent>
+                    </Card>
                   )
                 })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           ) : (
             <p className="text-center text-muted-foreground py-8">
               No products found matching the selected filters

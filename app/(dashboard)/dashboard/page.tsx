@@ -97,17 +97,16 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-16">
-      {/* Page header */}
-      <div className="flex items-start justify-between gap-8">
-        <div className="space-y-3">
-          <h1 className="text-4xl font-bold tracking-tight text-[#0D1117]">Dashboard</h1>
-          <p className="text-base text-[#7A7A7A] leading-relaxed max-w-2xl">
+    <div className="space-y-8 sm:space-y-12 md:space-y-16">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6 md:gap-8">
+        <div className="space-y-2 sm:space-y-3">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0D1117]">Dashboard</h1>
+          <p className="text-sm sm:text-base text-[#7A7A7A] leading-relaxed max-w-2xl">
             Welcome back. Here's your business overview
           </p>
         </div>
         {company && company.company_type === 'supplier' && (
-          <Button asChild className="bg-[#0D1117] text-white hover:bg-[#0D1117]/90 font-bold px-6 py-3 h-auto rounded-md">
+          <Button asChild className="w-full sm:w-auto bg-[#0D1117] text-white hover:bg-[#0D1117]/90 font-bold px-5 sm:px-6 py-3 h-11 sm:h-auto rounded-md text-[15px]">
             <Link href="/dashboard/products/new">
               <Package className="mr-2 h-4 w-4" />
               Add Product
@@ -123,84 +122,82 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* KPI Cards - clay.global style */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-white border-[#E2E2E2] p-8 rounded-md">
-          <CardHeader className="p-0 pb-6">
+      <div className="grid gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white border-[#E2E2E2] p-6 sm:p-7 md:p-8 rounded-md">
+          <CardHeader className="p-0 pb-4 sm:pb-5 md:pb-6">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-wide text-[#7A7A7A]">Total Products</CardTitle>
               <Package className="h-4 w-4 text-[#7A7A7A]" />
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-4xl font-bold text-[#0D1117]">{stats.totalProducts}</div>
-            <p className="text-xs text-[#7A7A7A] mt-3">
+            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">{stats.totalProducts}</div>
+            <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
               +12% from last month
             </p>
           </CardContent>
         </Card>
         
-        <Card className="bg-white border-[#E2E2E2] p-8 rounded-md">
-          <CardHeader className="p-0 pb-6">
+        <Card className="bg-white border-[#E2E2E2] p-6 sm:p-7 md:p-8 rounded-md">
+          <CardHeader className="p-0 pb-4 sm:pb-5 md:pb-6">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-wide text-[#7A7A7A]">Active RFQs</CardTitle>
               <ShoppingCart className="h-4 w-4 text-[#7A7A7A]" />
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-4xl font-bold text-[#0D1117]">{stats.activeRFQs}</div>
-            <p className="text-xs text-[#7A7A7A] mt-3">
+            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">{stats.activeRFQs}</div>
+            <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
               +8% from last month
             </p>
           </CardContent>
         </Card>
         
-        <Card className="bg-white border-[#E2E2E2] p-8 rounded-md">
-          <CardHeader className="p-0 pb-6">
+        <Card className="bg-white border-[#E2E2E2] p-6 sm:p-7 md:p-8 rounded-md">
+          <CardHeader className="p-0 pb-4 sm:pb-5 md:pb-6">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-wide text-[#7A7A7A]">Monthly Revenue</CardTitle>
               <TrendingUp className="h-4 w-4 text-[#7A7A7A]" />
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-4xl font-bold text-[#0D1117]">${(stats.monthlyRevenue / 1000).toFixed(0)}k</div>
-            <p className="text-xs text-[#7A7A7A] mt-3">
+            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">${(stats.monthlyRevenue / 1000).toFixed(0)}k</div>
+            <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
               +15% from last month
             </p>
           </CardContent>
         </Card>
         
-        <Card className="bg-white border-[#E2E2E2] p-8 rounded-md">
-          <CardHeader className="p-0 pb-6">
+        <Card className="bg-white border-[#E2E2E2] p-6 sm:p-7 md:p-8 rounded-md">
+          <CardHeader className="p-0 pb-4 sm:pb-5 md:pb-6">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-wide text-[#7A7A7A]">New Buyers</CardTitle>
               <Users className="h-4 w-4 text-[#7A7A7A]" />
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-4xl font-bold text-[#0D1117]">{stats.newBuyers}</div>
-            <p className="text-xs text-[#7A7A7A] mt-3">
+            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">{stats.newBuyers}</div>
+            <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
               +20% from last month
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Content cards */}
-      <div className="grid gap-8 lg:grid-cols-2">
-        <Card className="bg-white border-[#E2E2E2] p-8 rounded-md">
-          <CardHeader className="p-0 pb-8">
-            <CardTitle className="text-2xl font-bold text-[#0D1117]">Recent RFQs</CardTitle>
+      <div className="grid gap-6 sm:gap-7 md:gap-8 lg:grid-cols-2">
+        <Card className="bg-white border-[#E2E2E2] p-6 sm:p-7 md:p-8 rounded-md">
+          <CardHeader className="p-0 pb-6 sm:pb-7 md:pb-8">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-[#0D1117]">Recent RFQs</CardTitle>
             <CardDescription className="text-sm text-[#7A7A7A] mt-2">Latest quote requests from buyers</CardDescription>
           </CardHeader>
-          <CardContent className="p-0 space-y-4">
+          <CardContent className="p-0 space-y-3 sm:space-y-4">
             {recentRFQs.map((rfq) => (
-              <div key={rfq.id} className="flex items-center justify-between p-4 rounded-md border border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors">
+              <div key={rfq.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-md border border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors">
                 <div className="space-y-1">
                   <p className="font-bold text-sm text-[#0D1117]">{rfq.title}</p>
                   <p className="text-xs text-[#7A7A7A]">{rfq.buyer}</p>
                 </div>
-                <div className="text-right space-y-1">
+                <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 self-stretch sm:self-auto">
                   <Badge variant={rfq.status === 'responded' ? 'default' : 'outline'} className="text-xs font-bold uppercase">
                     {rfq.status}
                   </Badge>
@@ -208,7 +205,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
             ))}
-            <Button asChild variant="outline" className="w-full mt-6 border-[#0D1117] text-[#0D1117] hover:bg-[#F6F6F6] font-bold rounded-md">
+            <Button asChild variant="outline" className="w-full mt-4 sm:mt-6 border-[#0D1117] text-[#0D1117] hover:bg-[#F6F6F6] font-bold rounded-md h-11">
               <Link href="/dashboard/rfqs">
                 View All RFQs
               </Link>
@@ -216,9 +213,9 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-[#E2E2E2] p-8 rounded-md">
-          <CardHeader className="p-0 pb-8">
-            <CardTitle className="text-2xl font-bold text-[#0D1117]">Quick Actions</CardTitle>
+        <Card className="bg-white border-[#E2E2E2] p-6 sm:p-7 md:p-8 rounded-md">
+          <CardHeader className="p-0 pb-6 sm:pb-7 md:pb-8">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-[#0D1117]">Quick Actions</CardTitle>
             <CardDescription className="text-sm text-[#7A7A7A] mt-2">Common tasks and shortcuts</CardDescription>
           </CardHeader>
           <CardContent className="p-0 space-y-3">

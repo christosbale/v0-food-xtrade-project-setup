@@ -6,13 +6,14 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { ICON_CLASSES } from '@/lib/icon-system'
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-[#E2E2E2]">
-      <div className="container-boxed flex h-16 items-center justify-between">
+      <div className="container-boxed flex h-14 md:h-16 items-center justify-between">
         <Link href="/" className="flex items-center">
-          <span className="text-xl font-bold tracking-tight text-[#0D1117]">
+          <span className="text-lg md:text-xl font-bold tracking-tight text-[#0D1117]">
             food<span className="text-[#FFD036]">X</span>trade
           </span>
         </Link>
@@ -62,18 +63,18 @@ export function SiteHeader() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-3 lg:flex">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="hidden items-center gap-2 md:gap-3 lg:flex">
             <Link href="/login">
               <Button 
                 variant="ghost" 
-                className="text-[14px] font-medium text-[#0D1117] hover:bg-[#F6F6F6] h-auto py-2 px-4"
+                className="text-[14px] font-medium text-[#0D1117] hover:bg-[#F6F6F6] h-auto py-2 px-3 md:px-4"
               >
                 Log In
               </Button>
             </Link>
             <Link href="/register">
-              <Button className="bg-[#0D1117] text-white font-medium hover:bg-[#0D1117]/90 text-[14px] h-auto py-2 px-[18px] rounded-md">
+              <Button className="bg-[#0D1117] text-white font-medium hover:bg-[#0D1117]/90 text-[14px] h-11 px-4 md:px-[18px] rounded-md">
                 Get Started
               </Button>
             </Link>
@@ -81,63 +82,68 @@ export function SiteHeader() {
 
           <Sheet>
             <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <Menu className="h-4 w-4 text-[#0D1117]" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-11 w-11 min-h-[44px] min-w-[44px]"
+                aria-label="Open navigation menu"
+              >
+                <Menu className={ICON_CLASSES.menu} strokeWidth={1.5} />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] bg-white border-[#E2E2E2]">
-              <nav className="flex flex-col gap-4 mt-8">
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] bg-white border-[#E2E2E2]">
+              <nav className="flex flex-col gap-1 mt-8">
                 <Link
                   href="/products"
-                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
+                  className="text-[15px] md:text-[16px] font-medium text-[#0D1117] py-3.5 px-3 rounded-md transition-colors hover:bg-[#F6F6F6] min-h-[44px] flex items-center"
                 >
                   Products
                 </Link>
                 <Link
                   href="/price-index"
-                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
+                  className="text-[15px] md:text-[16px] font-medium text-[#0D1117] py-3.5 px-3 rounded-md transition-colors hover:bg-[#F6F6F6] min-h-[44px] flex items-center"
                 >
                   Price Index
                 </Link>
                 <Link
                   href="/insights"
-                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
+                  className="text-[15px] md:text-[16px] font-medium text-[#0D1117] py-3.5 px-3 rounded-md transition-colors hover:bg-[#F6F6F6] min-h-[44px] flex items-center"
                 >
                   Insights
                 </Link>
                 <Link
                   href="/logistics"
-                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
+                  className="text-[15px] md:text-[16px] font-medium text-[#0D1117] py-3.5 px-3 rounded-md transition-colors hover:bg-[#F6F6F6] min-h-[44px] flex items-center"
                 >
                   Logistics
                 </Link>
                 <Link
                   href="/buyers"
-                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
+                  className="text-[15px] md:text-[16px] font-medium text-[#0D1117] py-3.5 px-3 rounded-md transition-colors hover:bg-[#F6F6F6] min-h-[44px] flex items-center"
                 >
                   For Buyers
                 </Link>
                 <Link
                   href="/suppliers"
-                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
+                  className="text-[15px] md:text-[16px] font-medium text-[#0D1117] py-3.5 px-3 rounded-md transition-colors hover:bg-[#F6F6F6] min-h-[44px] flex items-center"
                 >
                   For Suppliers
                 </Link>
                 <Link
                   href="/pricing"
-                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
+                  className="text-[15px] md:text-[16px] font-medium text-[#0D1117] py-3.5 px-3 rounded-md transition-colors hover:bg-[#F6F6F6] min-h-[44px] flex items-center"
                 >
                   Pricing
                 </Link>
-                <div className="mt-4 flex flex-col gap-3 border-t border-[#E2E2E2] pt-4">
+                <div className="mt-4 flex flex-col gap-2 border-t border-[#E2E2E2] pt-4">
                   <Link href="/login">
-                    <Button variant="ghost" className="w-full justify-start text-[14px] text-[#0D1117] hover:bg-[#F6F6F6]">
+                    <Button variant="ghost" className="w-full justify-start text-[15px] text-[#0D1117] hover:bg-[#F6F6F6] h-11 min-h-[44px]">
                       Log In
                     </Button>
                   </Link>
                   <Link href="/register">
-                    <Button className="w-full bg-[#0D1117] text-white font-medium hover:bg-[#0D1117]/90 text-[14px]">
+                    <Button className="w-full bg-[#0D1117] text-white font-medium hover:bg-[#0D1117]/90 text-[15px] h-11 min-h-[44px]">
                       Get Started
                     </Button>
                   </Link>

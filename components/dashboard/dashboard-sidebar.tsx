@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { LayoutDashboard, Package, ShoppingCart, MessageSquare, BarChart3, Settings, Building2, CreditCard, ShieldCheck, LogOut } from 'lucide-react'
 import { isCurrentUserAdmin } from '@/lib/auth/current-company-client'
+import { ICON_CLASSES } from '@/lib/icon-system'
 
 const sidebarNavItems = [
   {
@@ -63,7 +64,7 @@ export function DashboardSidebar() {
       {/* Logo area */}
       <div className="px-6 py-8 border-b border-white/10">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <Building2 className="h-5 w-5 text-white" />
+          <Building2 className={ICON_CLASSES.navigation} strokeWidth={1.5} />
           <span className="font-bold text-base text-white tracking-tight">foodXtrade</span>
         </Link>
         <p className="text-[11px] text-white/60 mt-1 font-medium uppercase tracking-wide">Dashboard</p>
@@ -76,7 +77,7 @@ export function DashboardSidebar() {
             href="/admin"
             className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-white bg-[#3DA9FC]/20 hover:bg-[#3DA9FC]/30 transition-colors border-l-[4px] border-[#3DA9FC]"
           >
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck className={ICON_CLASSES.inline} strokeWidth={1.5} />
             Admin Panel
           </Link>
         </div>
@@ -100,7 +101,7 @@ export function DashboardSidebar() {
                       : 'text-white/80 hover:text-white hover:bg-white/5 border-l-[4px] border-transparent'
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className={ICON_CLASSES.inline} strokeWidth={1.5} />
                   {item.title}
                 </Link>
               </li>
@@ -115,7 +116,7 @@ export function DashboardSidebar() {
           href="/api/auth/signout"
           className="flex items-center gap-3 px-3 py-2.5 rounded-md text-[14px] font-medium text-white/60 hover:text-white/80 hover:bg-white/5 transition-colors"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className={ICON_CLASSES.inline} strokeWidth={1.5} />
           Logout
         </Link>
       </div>

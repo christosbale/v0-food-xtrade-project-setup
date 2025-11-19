@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { LayoutDashboard, Building2, Users, Package, CreditCard, ArrowLeft, Clock, FileText, TrendingUp, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ICON_CLASSES } from '@/lib/icon-system'
 
 const adminNavItems = [
   {
@@ -62,7 +63,7 @@ export function AdminSidebar() {
       <nav className="flex h-full flex-col gap-2 p-4">
         <Link href="/dashboard">
           <Button variant="outline" className="w-full justify-start mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className={cn(ICON_CLASSES.inline, "mr-2")} strokeWidth={1.5} />
             Back to Dashboard
           </Button>
         </Link>
@@ -82,7 +83,7 @@ export function AdminSidebar() {
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className={ICON_CLASSES.navigation} strokeWidth={1.5} />
               {item.title}
             </Link>
           )

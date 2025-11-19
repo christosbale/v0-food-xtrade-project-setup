@@ -359,33 +359,33 @@ export default function RFQsPage() {
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Date</th>
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Buyer Company</th>
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Product</th>
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Quantity</th>
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Country</th>
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Status</th>
-                        <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Actions</th>
+                    <thead className="hidden md:table-header-group">
+                      <tr className="border-b border-[#E2E2E2]">
+                        <th className="pb-3 text-left text-xs font-bold text-[#7A7A7A] uppercase tracking-wide">Date</th>
+                        <th className="pb-3 text-left text-xs font-bold text-[#7A7A7A] uppercase tracking-wide">Buyer Company</th>
+                        <th className="pb-3 text-left text-xs font-bold text-[#7A7A7A] uppercase tracking-wide">Product</th>
+                        <th className="pb-3 text-left text-xs font-bold text-[#7A7A7A] uppercase tracking-wide">Quantity</th>
+                        <th className="pb-3 text-left text-xs font-bold text-[#7A7A7A] uppercase tracking-wide">Country</th>
+                        <th className="pb-3 text-left text-xs font-bold text-[#7A7A7A] uppercase tracking-wide">Status</th>
+                        <th className="pb-3 text-left text-xs font-bold text-[#7A7A7A] uppercase tracking-wide">Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="hidden md:table-row-group">
                       {rfqs.map((rfq) => (
-                        <tr key={rfq.id} className="border-b last:border-0 hover:bg-muted/50">
-                          <td className="py-4 text-sm">
+                        <tr key={rfq.id} className="border-b border-[#E2E2E2] last:border-0 hover:bg-[#F6F6F6] transition-colors">
+                          <td className="py-4 text-sm text-[#0D1117]">
                             {new Date(rfq.created_at).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               year: 'numeric',
                             })}
                           </td>
-                          <td className="py-4 text-sm font-medium">{rfq.buyer_company_name}</td>
-                          <td className="py-4 text-sm">{rfq.product_name}</td>
-                          <td className="py-4 text-sm">
+                          <td className="py-4 text-sm font-medium text-[#0D1117]">{rfq.buyer_company_name}</td>
+                          <td className="py-4 text-sm text-[#0D1117]">{rfq.product_name}</td>
+                          <td className="py-4 text-sm text-[#0D1117]">
                             {rfq.desired_quantity} {rfq.unit}
                           </td>
-                          <td className="py-4 text-sm">{rfq.buyer_country}</td>
+                          <td className="py-4 text-sm text-[#0D1117]">{rfq.buyer_country}</td>
                           <td className="py-4">
                             <Badge variant="outline" className={getStatusColor(rfq.status)}>
                               {getStatusLabel(rfq.status)}
@@ -396,6 +396,7 @@ export default function RFQsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => openDetail(rfq)}
+                              className="hover:bg-[#0D1117] hover:text-white"
                             >
                               View Details
                             </Button>
@@ -404,6 +405,56 @@ export default function RFQsPage() {
                       ))}
                     </tbody>
                   </table>
+
+                  <div className="md:hidden space-y-3">
+                    {rfqs.map((rfq) => (
+                      <Card key={rfq.id} className="border border-[#E2E2E2]" onClick={() => openDetail(rfq)}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-[#0D1117]">{rfq.buyer_company_name}</p>
+                              <p className="text-sm text-[#7A7A7A] mt-0.5">{rfq.product_name}</p>
+                            </div>
+                            <Badge variant="outline" className={`${getStatusColor(rfq.status)} flex-shrink-0`}>
+                              {getStatusLabel(rfq.status)}
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                            <div>
+                              <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Quantity</p>
+                              <p className="text-[#0D1117] font-medium">
+                                {rfq.desired_quantity} {rfq.unit}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Country</p>
+                              <p className="text-[#0D1117]">{rfq.buyer_country}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Date</p>
+                              <p className="text-[#0D1117] text-sm">
+                                {new Date(rfq.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
+                              </p>
+                            </div>
+                          </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full mt-2"
+                            onClick={() => openDetail(rfq)}
+                          >
+                            View Details
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>

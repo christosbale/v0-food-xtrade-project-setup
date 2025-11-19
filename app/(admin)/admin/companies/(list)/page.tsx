@@ -211,118 +211,226 @@ export default async function CompaniesListPage({
         </CardHeader>
         <CardContent>
           {filteredCompanies.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company Name</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Verification Status</TableHead>
-                  <TableHead>Verification Level</TableHead>
-                  <TableHead>Risk Score</TableHead>
-                  <TableHead>Subscription Plan</TableHead>
-                  <TableHead>Onboarding</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Company Name</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Verification Status</TableHead>
+                      <TableHead>Verification Level</TableHead>
+                      <TableHead>Risk Score</TableHead>
+                      <TableHead>Subscription Plan</TableHead>
+                      <TableHead>Onboarding</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCompanies.map((company) => {
+                      const riskCategory = getRiskCategory(company.risk_score)
+                      
+                      return (
+                        <TableRow 
+                          key={company.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => window.location.href = `/admin/companies/${company.id}`}
+                        >
+                          <TableCell className="font-medium">
+                            <Link href={`/admin/companies/${company.id}`} className="hover:underline">
+                              {company.company_name}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{company.country}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={
+                                company.verification_status === 'verified' ? 'verified' :
+                                company.verification_status === 'pending' ? 'secondary' :
+                                'destructive'
+                              }
+                              className="capitalize"
+                            >
+                              {company.verification_status === 'verified' && '✓ '}
+                              {company.verification_status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {company.verification_level ? (
+                              <Badge variant="outline" className="capitalize">
+                                {company.verification_level}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {company.risk_score !== null ? (
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{company.risk_score}</span>
+                                <Badge 
+                                  variant={
+                                    riskCategory === 'low' ? 'risk-low' :
+                                    riskCategory === 'medium' ? 'risk-medium' :
+                                    riskCategory === 'high' ? 'risk-high' :
+                                    'outline'
+                                  }
+                                  className="text-xs capitalize"
+                                >
+                                  {riskCategory}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {company.subscription_plan ? (
+                              <Badge 
+                                variant="outline"
+                                className="capitalize"
+                              >
+                                {company.subscription_plan}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {company.onboarding_completed ? (
+                              <div className="flex items-center gap-1 text-green-600">
+                                <CheckCircle2 className="h-4 w-4" />
+                                <span className="text-sm">Completed</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <XCircle className="h-4 w-4" />
+                                <span className="text-sm">Not completed</span>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              asChild
+                            >
+                              <Link href={`/admin/companies/${company.id}`}>
+                                View
+                              </Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden space-y-3">
                 {filteredCompanies.map((company) => {
                   const riskCategory = getRiskCategory(company.risk_score)
                   
                   return (
-                    <TableRow 
-                      key={company.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => window.location.href = `/admin/companies/${company.id}`}
-                    >
-                      <TableCell className="font-medium">
-                        <Link href={`/admin/companies/${company.id}`} className="hover:underline">
-                          {company.company_name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{company.country}</TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            company.verification_status === 'verified' ? 'verified' :
-                            company.verification_status === 'pending' ? 'secondary' :
-                            'destructive'
-                          }
-                          className="capitalize"
-                        >
-                          {company.verification_status === 'verified' && '✓ '}
-                          {company.verification_status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {company.verification_level ? (
-                          <Badge variant="outline" className="capitalize">
-                            {company.verification_level}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {company.risk_score !== null ? (
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{company.risk_score}</span>
-                            <Badge 
-                              variant={
-                                riskCategory === 'low' ? 'risk-low' :
-                                riskCategory === 'medium' ? 'risk-medium' :
-                                riskCategory === 'high' ? 'risk-high' :
-                                'outline'
-                              }
-                              className="text-xs capitalize"
+                    <Card key={company.id} className="border border-[#E2E2E2]">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <Link 
+                              href={`/admin/companies/${company.id}`}
+                              className="font-semibold text-[#0D1117] hover:underline block truncate"
                             >
-                              {riskCategory}
-                            </Badge>
+                              {company.company_name}
+                            </Link>
+                            <p className="text-sm text-[#7A7A7A] mt-0.5">{company.country}</p>
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {company.subscription_plan ? (
                           <Badge 
-                            variant="outline"
-                            className="capitalize"
+                            variant={
+                              company.verification_status === 'verified' ? 'verified' :
+                              company.verification_status === 'pending' ? 'secondary' :
+                              'destructive'
+                            }
+                            className="capitalize flex-shrink-0"
                           >
-                            {company.subscription_plan}
+                            {company.verification_status === 'verified' && '✓ '}
+                            {company.verification_status}
                           </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {company.onboarding_completed ? (
-                          <div className="flex items-center gap-1 text-green-600">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span className="text-sm">Completed</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Verification Level</p>
+                            {company.verification_level ? (
+                              <Badge variant="outline" className="capitalize text-xs">
+                                {company.verification_level}
+                              </Badge>
+                            ) : (
+                              <span className="text-[#7A7A7A]">—</span>
+                            )}
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <XCircle className="h-4 w-4" />
-                            <span className="text-sm">Not completed</span>
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Risk Score</p>
+                            {company.risk_score !== null ? (
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-[#0D1117]">{company.risk_score}</span>
+                                <Badge 
+                                  variant={
+                                    riskCategory === 'low' ? 'risk-low' :
+                                    riskCategory === 'medium' ? 'risk-medium' :
+                                    riskCategory === 'high' ? 'risk-high' :
+                                    'outline'
+                                  }
+                                  className="text-xs capitalize"
+                                >
+                                  {riskCategory}
+                                </Badge>
+                              </div>
+                            ) : (
+                              <span className="text-[#7A7A7A]">—</span>
+                            )}
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Plan</p>
+                            {company.subscription_plan ? (
+                              <Badge variant="outline" className="capitalize text-xs">
+                                {company.subscription_plan}
+                              </Badge>
+                            ) : (
+                              <span className="text-[#7A7A7A]">—</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Onboarding</p>
+                            {company.onboarding_completed ? (
+                              <div className="flex items-center gap-1 text-green-600">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span className="text-xs">Done</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-[#7A7A7A]">
+                                <XCircle className="h-3 w-3" />
+                                <span className="text-xs">Pending</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
                         <Button
                           size="sm"
                           variant="outline"
+                          className="w-full mt-2"
                           asChild
                         >
                           <Link href={`/admin/companies/${company.id}`}>
-                            View
+                            View Details
                           </Link>
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </CardContent>
+                    </Card>
                   )
                 })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           ) : (
             <p className="text-center text-muted-foreground py-8">
               No companies found matching the selected filters

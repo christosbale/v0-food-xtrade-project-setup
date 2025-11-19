@@ -205,91 +205,173 @@ export default async function AdminRFQsPage({
         </CardHeader>
         <CardContent>
           {allRfqs.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category / Subcategory</TableHead>
-                  <TableHead>Buyer Country</TableHead>
-                  <TableHead>MOQ</TableHead>
-                  <TableHead>Customs Status</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Category / Subcategory</TableHead>
+                      <TableHead>Buyer Country</TableHead>
+                      <TableHead>MOQ</TableHead>
+                      <TableHead>Customs Status</TableHead>
+                      <TableHead>Created At</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allRfqs.map((rfq) => {
+                      const displayTitle = rfq.message?.substring(0, 50) || rfq.target_subcategory || `RFQ #${rfq.id.substring(0, 8)}`
+                      
+                      return (
+                        <TableRow 
+                          key={rfq.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => window.location.href = `/dashboard/rfqs`}
+                        >
+                          <TableCell className="font-medium max-w-[200px] truncate">
+                            {displayTitle}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm">{getCategoryLabel(rfq.target_category)}</span>
+                              {rfq.target_subcategory && (
+                                <span className="text-xs text-muted-foreground">
+                                  {getSubcategoryLabel(rfq.target_category, rfq.target_subcategory)}
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{rfq.buyer_country || '—'}</TableCell>
+                          <TableCell>
+                            {rfq.target_moq ? (
+                              <span>{rfq.target_moq} {rfq.target_moq_unit || ''}</span>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {rfq.target_customs_status ? (
+                              <Badge 
+                                variant="customs"
+                                className="capitalize"
+                              >
+                                {rfq.target_customs_status}
+                              </Badge>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(rfq.created_at).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={
+                                rfq.status === 'closed' ? 'outline' : 'default'
+                              }
+                              className="capitalize"
+                            >
+                              {rfq.status || 'open'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              asChild
+                            >
+                              <Link href="/dashboard/rfqs">
+                                View
+                              </Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="lg:hidden space-y-3">
                 {allRfqs.map((rfq) => {
                   const displayTitle = rfq.message?.substring(0, 50) || rfq.target_subcategory || `RFQ #${rfq.id.substring(0, 8)}`
                   
                   return (
-                    <TableRow 
-                      key={rfq.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => window.location.href = `/dashboard/rfqs`}
-                    >
-                      <TableCell className="font-medium max-w-[200px] truncate">
-                        {displayTitle}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-sm">{getCategoryLabel(rfq.target_category)}</span>
-                          {rfq.target_subcategory && (
-                            <span className="text-xs text-muted-foreground">
-                              {getSubcategoryLabel(rfq.target_category, rfq.target_subcategory)}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{rfq.buyer_country || '—'}</TableCell>
-                      <TableCell>
-                        {rfq.target_moq ? (
-                          <span>{rfq.target_moq} {rfq.target_moq_unit || ''}</span>
-                        ) : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {rfq.target_customs_status ? (
+                    <Card key={rfq.id} className="border border-[#E2E2E2]">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-[#0D1117]">{displayTitle}</p>
+                            <div className="flex flex-col gap-1 mt-1">
+                              <p className="text-sm text-[#7A7A7A]">{getCategoryLabel(rfq.target_category)}</p>
+                              {rfq.target_subcategory && (
+                                <p className="text-xs text-[#7A7A7A]">
+                                  {getSubcategoryLabel(rfq.target_category, rfq.target_subcategory)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
                           <Badge 
-                            variant="customs"
-                            className="capitalize"
+                            variant={rfq.status === 'closed' ? 'outline' : 'default'}
+                            className="capitalize flex-shrink-0"
                           >
-                            {rfq.target_customs_status}
+                            {rfq.status || 'open'}
                           </Badge>
-                        ) : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(rfq.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={
-                            rfq.status === 'closed' ? 'outline' : 'default'
-                          }
-                          className="capitalize"
-                        >
-                          {rfq.status || 'open'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Country</p>
+                            <p className="text-[#0D1117]">{rfq.buyer_country || '—'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">MOQ</p>
+                            {rfq.target_moq ? (
+                              <p className="text-[#0D1117]">{rfq.target_moq} {rfq.target_moq_unit || ''}</p>
+                            ) : (
+                              <span className="text-[#7A7A7A]">—</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Customs</p>
+                            {rfq.target_customs_status ? (
+                              <Badge variant="customs" className="capitalize text-xs">
+                                {rfq.target_customs_status}
+                              </Badge>
+                            ) : (
+                              <span className="text-[#7A7A7A]">—</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Created</p>
+                            <p className="text-[#0D1117] text-sm">
+                              {new Date(rfq.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+
                         <Button
                           size="sm"
                           variant="outline"
+                          className="w-full mt-2"
                           asChild
                         >
                           <Link href="/dashboard/rfqs">
-                            View
+                            View Details
                           </Link>
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </CardContent>
+                    </Card>
                   )
                 })}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           ) : (
             <p className="text-center text-muted-foreground py-8">
               No RFQs found matching the selected filters
