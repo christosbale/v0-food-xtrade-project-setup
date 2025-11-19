@@ -147,7 +147,7 @@ export interface OnboardingFormData {
 export async function submitSupplierOnboarding(
   plan: 'basic' | 'pro' | 'premium',
   formData: OnboardingFormData
-) {
+): Promise<{ success: boolean; error?: string; companyId?: string }> {
   // Call the main function with simplified data
   return onboardSupplier({
     plan,
