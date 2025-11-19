@@ -4,25 +4,38 @@ export interface Company {
   id: string
   user_id: string
   company_name: string
-  company_type: 'supplier' | 'buyer'
+  company_type: 'supplier' | 'buyer' | 'both'
   business_email: string
   country: string
-  city: string
-  address: string
-  postal_code: string
-  phone: string
+  city: string | null
+  address: string | null
+  company_address: string | null
+  postal_code: string | null
+  phone: string | null
   website: string | null
+  website_url: string | null
   tax_id: string | null
+  vat_number: string | null
   business_registration_number: string | null
   verification_status: 'pending' | 'verified' | 'rejected'
+  verification_level: 'basic' | 'trusted' | 'premium' | null
   verification_notes: string | null
-  subscription_tier: 'basic' | 'pro' | 'premium'
-  can_buy: boolean
-  can_sell: boolean
+  verification_documents: Record<string, any> | null
+  verified_at: string | null
+  subscription_tier: 'free' | 'basic' | 'pro' | 'premium' | 'enterprise' | null
+  subscription_plan: string | null
+  subscription_expires_at: string | null
+  preferred_currency: string | null
+  risk_score: number | null
+  risk_notes: string | null
+  risk_last_updated: string | null
   approved_by: string | null
   approved_at: string | null
-  vat_validated: boolean
+  vat_validated: boolean | null
   vat_validation_date: string | null
+  onboarding_completed: boolean | null
+  onboarding_started_at: string | null
+  onboarding_completed_at: string | null
   created_at: string
   updated_at: string
 }

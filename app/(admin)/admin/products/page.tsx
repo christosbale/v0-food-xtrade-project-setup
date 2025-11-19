@@ -21,19 +21,7 @@ interface SupabaseCompany {
   risk_score: number | null
 }
 
-interface SupabaseProductRaw {
-  id: string
-  product_name: string | null
-  category: string | null
-  origin_country: string | null
-  customs_status: string | null
-  price_per_unit: number | null
-  currency: string | null
-  company_id: string | null
-  companies: SupabaseCompany | SupabaseCompany[] | null
-}
-
-interface Product {
+interface SupabaseProduct {
   id: string
   product_name: string | null
   category: string | null
@@ -79,7 +67,7 @@ export default async function AdminProductsPage({
       price_per_unit,
       currency,
       company_id,
-      companies (
+      companies!inner (
         company_name,
         verification_status,
         risk_score
@@ -101,17 +89,23 @@ export default async function AdminProductsPage({
     console.error('[v0] Error fetching products:', error)
   }
 
-  const products: Product[] = (productsRaw || []).map((p: unknown) => {
-    const product = p as SupabaseProductRaw
+  const products: SupabaseProduct[] = (productsRaw || []).map((item: any) => {
+    const companies = Array.isArray(item.companies) 
+      ? (item.companies[0] || null)
+      : item.companies
+    
     return {
-      ...product,
-      companies: Array.isArray(product.companies) ? product.companies[0] || null : product.companies
+      id: item.id,
+      product_name: item.product_name,
+      category: item.category,
+      origin_country: item.origin_country,
+      customs_status: item.customs_status,
+      price_per_unit: item.price_per_unit,
+      currency: item.currency,
+      company_id: item.company_id,
+      companies
     }
   })
-  
-  const getCompanyData = (companies: SupabaseCompany | null): SupabaseCompany | null => {
-    return companies
-  }
 
   let filteredProducts = [...products]
 
@@ -402,7 +396,7 @@ export default async function AdminProductsPage({
                                 {company?.company_name || '—'}
                               </Link>
                               {company?.verification_status === 'verified' && (
-                                <Badge variant="verified" className="text-xs">
+                                <Badge variant="secondary" className="text-xs">
                                   ✓
                                 </Badge>
                               )}
@@ -414,7 +408,7 @@ export default async function AdminProductsPage({
                           <TableCell>{product.origin_country || '—'}</TableCell>
                           <TableCell>
                             {product.customs_status ? (
-                              <Badge variant="customs" className="capitalize">
+                              <Badge variant="secondary" className="capitalize">
                                 {product.customs_status.replace('_', ' ')}
                               </Badge>
                             ) : '—'}
@@ -431,12 +425,7 @@ export default async function AdminProductsPage({
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{company.risk_score}</span>
                                 <Badge 
-                                  variant={
-                                    riskCategory === 'low' ? 'risk-low' :
-                                    riskCategory === 'medium' ? 'risk-medium' :
-                                    riskCategory === 'high' ? 'risk-high' :
-                                    'outline'
-                                  }
+                                  variant="secondary"
                                   className="text-xs capitalize"
                                 >
                                   {riskCategory}
@@ -486,12 +475,12 @@ export default async function AdminProductsPage({
                             >
                               {company?.company_name || '—'}
                               {company?.verification_status === 'verified' && (
-                                <Badge variant="verified" className="text-xs ml-1">✓</Badge>
+                                <Badge variant="secondary" className="text-xs ml-1">✓</Badge>
                               )}
                             </Link>
                           </div>
                           {product.customs_status && (
-                            <Badge variant="customs" className="capitalize text-xs flex-shrink-0">
+                            <Badge variant="secondary" className="capitalize text-xs flex-shrink-0">
                               {product.customs_status.replace('_', ' ')}
                             </Badge>
                           )}
@@ -522,12 +511,7 @@ export default async function AdminProductsPage({
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-[#0D1117]">{company.risk_score}</span>
                                 <Badge 
-                                  variant={
-                                    riskCategory === 'low' ? 'risk-low' :
-                                    riskCategory === 'medium' ? 'risk-medium' :
-                                    riskCategory === 'high' ? 'risk-high' :
-                                    'outline'
-                                  }
+                                  variant="secondary"
                                   className="text-xs capitalize"
                                 >
                                   {riskCategory}

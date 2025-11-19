@@ -2,29 +2,19 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Building2, CheckCircle2, Clock, XCircle, Mail, ExternalLink, Upload, Eye, RefreshCw, Package, Plus, Shield, AlertTriangle } from 'lucide-react'
+import { Building2, CheckCircle2, Clock, XCircle, Mail, ExternalLink, Package, Plus, Shield } from 'lucide-react'
 import { getCurrentCompany } from '@/lib/auth/current-company'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { VerificationComplianceForm } from '@/components/dashboard/verification-compliance-form'
 import { EditCompanyDialog } from '@/components/dashboard/edit-company-dialog'
+import type { CompanyVerificationLevel } from '@/lib/database'
 
 export default async function CompanyProfilePage() {
-  console.log('[v0] CompanyProfilePage: Rendering')
-  
   const session = await getCurrentCompany()
   
-  console.log('[v0] CompanyProfilePage: Session result', {
-    hasSession: !!session,
-    hasUser: !!session?.user,
-    hasCompany: !!session?.company,
-    userId: session?.user?.id,
-    companyId: session?.company?.id
-  })
-  
   if (!session || !session.company) {
-    console.log('[v0] CompanyProfilePage: No session or company, redirecting to login')
     redirect('/login')
   }
 
@@ -42,29 +32,8 @@ export default async function CompanyProfilePage() {
     console.error('[v0] Error fetching products:', productsError)
   }
 
-  const documents = [
-    {
-      id: '1',
-      name: 'Business Registration Certificate',
-      filename: 'business-registration.pdf',
-      uploadedAt: '2024-01-15',
-    },
-    {
-      id: '2',
-      name: 'HACCP Certification',
-      filename: 'haccp-cert-2024.pdf',
-      uploadedAt: '2024-02-10',
-    },
-    {
-      id: '3',
-      name: 'ISO 9001 Certificate',
-      filename: 'iso-9001-certificate.pdf',
-      uploadedAt: '2024-02-10',
-    },
-  ]
-
   const verificationStatus = company.verification_status || 'pending'
-  const verificationLevel = company.verification_level as 'basic' | 'trusted' | 'premium' | null
+  const verificationLevel = company.verification_level as CompanyVerificationLevel | null
   const verifiedAt = company.verified_at
   const riskScore = company.risk_score
 
@@ -249,6 +218,7 @@ export default async function CompanyProfilePage() {
         </CardContent>
       </Card>
 
+      {/* Verification & Compliance */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -307,7 +277,6 @@ export default async function CompanyProfilePage() {
         </CardHeader>
         <CardContent>
           {!products || products.length === 0 ? (
-            // Empty state
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Package className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <h3 className="text-lg font-semibold mb-2">This company has no products listed yet</h3>
@@ -322,7 +291,6 @@ export default async function CompanyProfilePage() {
               </Button>
             </div>
           ) : (
-            // Products table
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
