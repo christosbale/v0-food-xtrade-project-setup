@@ -249,14 +249,13 @@ export default function RFQsPage() {
   const getStatusColor = (status: RFQStatus) => {
     switch (status) {
       case 'new':
-        return 'bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/20'
+        return 'bg-[#0D1117] text-white border-[#0D1117]'
       case 'in_discussion':
-        return 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+        return 'bg-[#0D1117]/10 text-[#0D1117] border-[#0D1117]/20'
       case 'closed':
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20'
+        return 'bg-[#E2E2E2] text-[#7A7A7A] border-[#E2E2E2]'
       default:
-        // Fallback for unexpected values
-        return 'bg-gray-500/10 text-gray-600 border-gray-500/20'
+        return 'bg-[#E2E2E2] text-[#7A7A7A] border-[#E2E2E2]'
     }
   }
 
@@ -269,7 +268,6 @@ export default function RFQsPage() {
       case 'closed':
         return 'Closed'
       default:
-        // Fallback for unexpected values
         return 'Unknown'
     }
   }
@@ -284,7 +282,7 @@ export default function RFQsPage() {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#FFB84D]" />
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#0D1117]" />
           <p className="mt-4 text-sm text-muted-foreground">Loading RFQs...</p>
         </div>
       </div>
@@ -487,7 +485,7 @@ export default function RFQsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/30">
+                            <Badge variant="outline" className="bg-[#0D1117]/10 text-[#0D1117] border-[#0D1117]/30">
                               {rfq.target_category}
                             </Badge>
                             {rfq.target_subcategory && (
@@ -678,7 +676,7 @@ export default function RFQsPage() {
                                 {rec.verification_level && rec.verification_level !== 'none' && (
                                   <Badge 
                                     variant="outline" 
-                                    className="bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/30"
+                                    className="bg-[#0D1117]/10 text-[#0D1117] border-[#0D1117]/30"
                                   >
                                     <Shield className="mr-1 h-3 w-3" />
                                     Verified
@@ -686,7 +684,7 @@ export default function RFQsPage() {
                                 )}
                               </div>
                               <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                                <span className="font-medium text-[#FFB84D]">
+                                <span className="font-medium text-[#0D1117]">
                                   Match: {rec.score}%
                                 </span>
                                 {rec.risk_score !== null && (
@@ -723,7 +721,7 @@ export default function RFQsPage() {
 
                 {/* Reply Button */}
                 <Button
-                  className="w-full bg-[#FFB84D] text-black hover:bg-[#FFA62F] font-semibold"
+                  className="w-full bg-[#0D1117] text-white hover:bg-[#1a1f2b] font-semibold"
                   size="lg"
                   asChild
                 >

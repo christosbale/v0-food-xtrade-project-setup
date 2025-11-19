@@ -132,7 +132,7 @@ export default function ProductsPage() {
             Manage your product catalog
           </p>
         </div>
-        <Button asChild className="bg-[#9FE870] text-black hover:bg-[#8FD860]">
+        <Button asChild className="bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
           <Link href="/dashboard/products/new">
             <Plus className="mr-2 h-4 w-4" />
             Add Product
@@ -189,7 +189,7 @@ export default function ProductsPage() {
                   : 'Add your first bulk product to get started.'}
               </p>
               {!searchQuery && (
-                <Button asChild className="bg-[#9FE870] text-black hover:bg-[#8FD860]">
+                <Button asChild className="bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
                   <Link href="/dashboard/products/new">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Product

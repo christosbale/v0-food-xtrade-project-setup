@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { VerificationComplianceForm } from '@/components/dashboard/verification-compliance-form'
+import { EditCompanyDialog } from '@/components/dashboard/edit-company-dialog'
 
 export default async function CompanyProfilePage() {
   const session = await getCurrentCompany()
@@ -188,7 +189,7 @@ export default async function CompanyProfilePage() {
               </CardTitle>
               <CardDescription>Your registered company details</CardDescription>
             </div>
-            <Button variant="outline">Edit Company Info</Button>
+            <EditCompanyDialog company={company} />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -285,7 +286,7 @@ export default async function CompanyProfilePage() {
               </CardTitle>
               <CardDescription>All listings associated with this company</CardDescription>
             </div>
-            <Button asChild className="bg-[#9FE870] text-black hover:bg-[#8FD860]">
+            <Button asChild className="bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
               <Link href="/dashboard/products/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Add New Product
@@ -302,7 +303,7 @@ export default async function CompanyProfilePage() {
               <p className="text-sm text-muted-foreground mb-6 max-w-md">
                 Start building your product catalog to attract buyers and receive quote requests.
               </p>
-              <Button asChild className="bg-[#9FE870] text-black hover:bg-[#8FD860]">
+              <Button asChild className="bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
                 <Link href="/dashboard/products/new">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Your First Product
@@ -343,7 +344,7 @@ export default async function CompanyProfilePage() {
                       <td className="py-3 px-4">
                         <Badge 
                           variant={product.status === 'published' ? 'default' : 'secondary'}
-                          className={product.status === 'published' ? 'bg-[#9FE870] text-black hover:bg-[#8FD860]' : ''}
+                          className={product.status === 'published' ? 'bg-[#0D1117] text-white' : ''}
                         >
                           {product.status}
                         </Badge>

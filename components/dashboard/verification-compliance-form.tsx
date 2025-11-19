@@ -331,7 +331,7 @@ export function VerificationComplianceForm({ company, canEdit }: VerificationCom
           <Button
             type="submit"
             disabled={isSubmitting || uploadedCount === 0}
-            className="bg-[#FFB84D] text-black hover:bg-[#FFA83D]"
+            className="bg-[#0D1117] text-white hover:bg-[#1a1f26] transition-colors min-h-[44px] px-6"
           >
             {isSubmitting ? (
               <>

@@ -472,4 +472,66 @@
   .btn-touch {
     min-height: 44px;
   }
+  
+  /* Adding design token helper classes for quick adoption */
+  .text-blueblack {
+    color: #0D1117;
+  }
+  
+  .text-softgrey {
+    color: #7A7A7A;
+  }
+  
+  .text-slategrey {
+    color: #7A7A7A;
+  }
+  
+  .bg-blueblack {
+    background-color: #0D1117;
+  }
+  
+  .bg-softgrey {
+    background-color: #F6F6F6;
+  }
+  
+  .bg-midgrey {
+    background-color: #E2E2E2;
+  }
+  
+  .border-midgrey {
+    border-color: #E2E2E2;
+  }
+  
+  .border-blueblack {
+    border-color: #0D1117;
+  }
+  
+  /* Primary button style - BlueBlack with white text */
+  .btn-primary {
+    background-color: #0D1117;
+    color: #FFFFFF;
+    font-weight: 700;
+    min-height: 44px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #1a1f2b;
+  }
+  
+  /* Secondary button style - White with BlueBlack border */
+  .btn-secondary {
+    background-color: #FFFFFF;
+    color: #0D1117;
+    border: 1px solid #0D1117;
+    font-weight: 700;
+    min-height: 44px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #F6F6F6;
+  }
 }

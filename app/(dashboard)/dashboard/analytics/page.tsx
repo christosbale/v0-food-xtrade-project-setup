@@ -30,7 +30,7 @@ type AnalyticsData = {
   messageActivity: Array<{ day: string; count: number }>
 }
 
-const COLORS = ['#9FE870', '#7DC850', '#5BA830', '#458820', '#2F6810']
+const COLORS = ['#0D1117', '#1a1f2b', '#3DA9FC', '#7A7A7A', '#E2E2E2']
 
 export default function AnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -353,7 +353,7 @@ export default function AnalyticsPage() {
                   config={{
                     count: {
                       label: 'Products',
-                      color: '#9FE870',
+                      color: '#0D1117',
                     },
                   }}
                   className="h-[300px]"
@@ -364,7 +364,7 @@ export default function AnalyticsPage() {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Area type="monotone" dataKey="count" stroke="#9FE870" fill="#9FE870" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="count" stroke="#0D1117" fill="#0D1117" fillOpacity={0.6} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -381,7 +381,7 @@ export default function AnalyticsPage() {
                   config={{
                     count: {
                       label: 'RFQs',
-                      color: '#7DC850',
+                      color: '#1a1f2b',
                     },
                   }}
                   className="h-[300px]"
@@ -392,7 +392,7 @@ export default function AnalyticsPage() {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="count" stroke="#7DC850" strokeWidth={2} />
+                      <Line type="monotone" dataKey="count" stroke="#1a1f2b" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -414,7 +414,7 @@ export default function AnalyticsPage() {
                     <div className="text-center space-y-3">
                       <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Upgrade to view detailed charts</p>
-                      <Button asChild size="sm" className="bg-[#9FE870] text-black hover:bg-[#8FD860]">
+                      <Button asChild size="sm" className="bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
                         <Link href="/dashboard/billing">Upgrade Plan</Link>
                       </Button>
                     </div>
@@ -424,7 +424,7 @@ export default function AnalyticsPage() {
                     config={{
                       count: {
                         label: 'Products',
-                        color: '#9FE870',
+                        color: '#0D1117',
                       },
                     }}
                     className="h-[300px]"
@@ -464,7 +464,7 @@ export default function AnalyticsPage() {
                     <div className="text-center space-y-3">
                       <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Upgrade to view product performance</p>
-                      <Button asChild size="sm" className="bg-[#9FE870] text-black hover:bg-[#8FD860]">
+                      <Button asChild size="sm" className="bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
                         <Link href="/dashboard/billing">Upgrade Plan</Link>
                       </Button>
                     </div>
@@ -501,7 +501,7 @@ export default function AnalyticsPage() {
                   config={{
                     count: {
                       label: 'RFQs',
-                      color: '#9FE870',
+                      color: '#0D1117',
                     },
                   }}
                   className="h-[300px]"
@@ -512,7 +512,7 @@ export default function AnalyticsPage() {
                       <XAxis dataKey="status" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="count" fill="#9FE870" />
+                      <Bar dataKey="count" fill="#0D1117" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -532,7 +532,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div 
-                      className="bg-[#9FE870] h-2 rounded-full" 
+                      className="bg-[#0D1117] h-2 rounded-full" 
                       style={{ width: `${analytics.overview.rfqResponseRate}%` }}
                     />
                   </div>
@@ -555,7 +555,7 @@ export default function AnalyticsPage() {
                     <AlertDescription>
                       Upgrade to see conversion rates, revenue projections, and custom reports.
                     </AlertDescription>
-                    <Button asChild size="sm" className="mt-3 bg-[#9FE870] text-black hover:bg-[#8FD860]">
+                    <Button asChild size="sm" className="mt-3 bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
                       <Link href="/dashboard/billing">Upgrade Now</Link>
                     </Button>
                   </Alert>
@@ -578,7 +578,7 @@ export default function AnalyticsPage() {
                     config={{
                       count: {
                         label: 'Messages',
-                        color: '#7DC850',
+                        color: '#1a1f2b',
                       },
                     }}
                     className="h-[300px]"
@@ -589,7 +589,7 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="day" />
                         <YAxis />
                         <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="count" fill="#7DC850" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="count" fill="#1a1f2b" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </ChartContainer>
@@ -604,7 +604,7 @@ export default function AnalyticsPage() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between py-2 border-b">
                     <span className="text-sm">Product Engagement Score</span>
-                    <Badge className="bg-[#9FE870] text-black">8.5/10</Badge>
+                    <Badge className="bg-[#0D1117] text-white">8.5/10</Badge>
                   </div>
                   <div className="flex items-center justify-between py-2 border-b">
                     <span className="text-sm">Market Visibility</span>
@@ -626,7 +626,7 @@ export default function AnalyticsPage() {
       </Tabs>
 
       {isFreeTier && (
-        <Card className="border-[#9FE870]">
+        <Card className="border-[#0D1117]">
           <CardHeader>
             <CardTitle>Unlock Full Analytics</CardTitle>
             <CardDescription>
@@ -643,7 +643,7 @@ export default function AnalyticsPage() {
                 <li>• Export data to CSV/Excel</li>
               </ul>
             </div>
-            <Button asChild className="bg-[#9FE870] text-black hover:bg-[#8FD860]">
+            <Button asChild className="bg-[#0D1117] text-white hover:bg-[#1a1f2b]">
               <Link href="/dashboard/billing">View Plans</Link>
             </Button>
           </CardContent>
