@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+/* Add font configuration for Universal Sans */
+@theme inline {
+  --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+}
+
 :root {
   /* Core Colors */
   --background: #FFFFFF;
@@ -11,10 +16,11 @@
   --popover: #FFFFFF;
   --popover-foreground: #0D1117;
   
-  --primary: #0D1117;
-  --primary-foreground: #FFFFFF;
+  /* Primary buttons should use yellow/orange accent, not black */
+  --primary: #FFD036;
+  --primary-foreground: #0D1117;
   
-  --secondary: #FFD036;
+  --secondary: #F6F6F6;
   --secondary-foreground: #0D1117;
   
   --muted: #F6F6F6;
@@ -28,7 +34,7 @@
   
   --border: #E2E2E2;
   --input: #E2E2E2;
-  --ring: #0D1117;
+  --ring: #FFD036;
   
   --chart-1: #0D1117;
   --chart-2: #7A7A7A;
@@ -40,23 +46,23 @@
   
   --sidebar: #F6F6F6;
   --sidebar-foreground: #0D1117;
-  --sidebar-primary: #0D1117;
-  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-primary: #FFD036;
+  --sidebar-primary-foreground: #0D1117;
   --sidebar-accent: #FFFFFF;
   --sidebar-accent-foreground: #0D1117;
   --sidebar-border: #E2E2E2;
-  --sidebar-ring: #0D1117;
+  --sidebar-ring: #FFD036;
 }
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--border);
   }
   
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+    /* Remove hardcoded font-family, now using Tailwind's font-sans class */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: 1.5;

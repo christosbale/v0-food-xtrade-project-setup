@@ -1,6 +1,13 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
+import { DM_Sans } from 'next/font/google'
 import './globals.css'
+
+const universalSans = DM_Sans({ 
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
+})
 
 export const metadata: Metadata = {
   title: 'foodXtrade - B2B Food Trading Marketplace',
@@ -31,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={universalSans.variable}>
       <body className="font-sans antialiased bg-white text-black">
         {children}
         <Analytics />
