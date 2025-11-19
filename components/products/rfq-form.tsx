@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 import { findMatchingSuppliers } from '@/lib/utils/rfq-matching'
-import { logDemandEvent } from '@/lib/demand/logDemandEvent'
+import { logRFQDemandEvent } from '@/app/products/actions'
 
 interface Product {
   id: string
@@ -166,24 +166,20 @@ export function RFQForm({ product, onSuccess, onCancel, showCancelButton = false
       }
 
       if (data && data[0]) {
-        await logDemandEvent({
-          event_type: 'rfq',
-          buyer_id: null, // RFQs can be submitted anonymously
-          buyer_country: formData.country,
-          category: formData.targetCategory || null,
-          subcategory: formData.targetSubcategory || null,
-          origin_country: formData.targetCountry || null,
-          customs_status: formData.targetCustomsStatus || null,
-          quantity: targetMoqValue,
-          quantity_unit: formData.targetMoqUnit || null,
-          rfq_id: data[0].id,
-          metadata: {
-            product_id: product.id,
-            target_price: targetPriceValue,
-            incoterm: formData.incoterm,
-            packaging: formData.targetPackaging,
-            full_rfq: data[0],
-          },
+        await logRFQDemandEvent({
+          rfqId: data[0].id,
+          buyerCountry: formData.country,
+          category: formData.targetCategory || undefined,
+          subcategory: formData.targetSubcategory || undefined,
+          originCountry: formData.targetCountry || undefined,
+          customsStatus: formData.targetCustomsStatus || undefined,
+          quantity: targetMoqValue || undefined,
+          quantityUnit: formData.targetMoqUnit || undefined,
+          productId: product.id,
+          targetPrice: targetPriceValue || undefined,
+          incoterm: formData.incoterm,
+          packaging: formData.targetPackaging || undefined,
+          fullRfq: data[0],
         })
       }
 

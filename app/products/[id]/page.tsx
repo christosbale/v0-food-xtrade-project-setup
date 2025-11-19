@@ -10,7 +10,6 @@ import { RFQForm } from '@/components/products/rfq-form'
 import { createClient } from '@/lib/supabase/server'
 import { formatPriceWithConversion, type Currency } from '@/lib/utils/currency'
 import { getOriginComparisonData } from '@/lib/utils/origin-comparison'
-import { logDemandEvent } from '@/lib/demand/logDemandEvent'
 import {
   Tooltip,
   TooltipContent,
@@ -59,6 +58,35 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
+async function logProductViewEvent(data: {
+  event_type: 'view'
+  buyer_id?: string | null
+  buyer_country?: string | null
+  category?: string | null
+  subcategory?: string | null
+  origin_country?: string | null
+  customs_status?: string | null
+  product_id?: string | null
+  metadata?: any
+}): Promise<void> {
+  try {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+      .from('demand_events')
+      .insert([data])
+
+    if (error) {
+      console.warn('[v0] Failed to log demand event:', error.message)
+      return
+    }
+
+    console.log('[v0] Demand event logged: view')
+  } catch (err) {
+    console.warn('[v0] Error logging demand event:', err)
+  }
+}
+
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
   const product = await getProduct(params.id)
 
@@ -69,7 +97,6 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  // Only track if user is not the supplier (avoid self-views)
   const isOwnProduct = user && product.company_id === user.id
   
   if (!isOwnProduct) {
@@ -82,14 +109,12 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         .eq('user_id', user.id)
         .single()
       
-      // Only track if user is a buyer (not another supplier viewing)
       if (company?.company_type === 'buyer') {
         buyerCountry = company.country
       }
     }
     
-    // Log product view demand event
-    await logDemandEvent({
+    await logProductViewEvent({
       event_type: 'view',
       buyer_id: user?.id || null,
       buyer_country: buyerCountry,
@@ -111,7 +136,6 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     ? await getOriginComparisonData(product.product_type) 
     : []
   
-  // Get top 3 origins (excluding current product's origin to show alternatives)
   const topOrigins = originComparisons
     .filter(o => o.origin !== product.origin_country)
     .slice(0, 3)
