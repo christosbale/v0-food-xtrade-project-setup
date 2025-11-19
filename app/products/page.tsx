@@ -16,7 +16,9 @@ async function getPublishedProducts() {
         company:companies!products_company_id_fkey (
           id,
           company_name,
-          verification_status
+          country,
+          verification_status,
+          risk_score
         )
       `)
       .eq('status', 'published')
@@ -27,7 +29,6 @@ async function getPublishedProducts() {
       return []
     }
 
-    console.log('[v0] Fetched products count:', products?.length || 0)
     return products || []
   } catch (error) {
     console.error('[v0] Unexpected error fetching products:', error)
@@ -41,20 +42,7 @@ export default async function ProductsPage() {
   return (
     <>
       <SiteHeader />
-      <main className="min-h-screen bg-background">
-        {/* Page Header */}
-        <div className="bg-primary text-primary-foreground py-12">
-          <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold mb-3">Market Overview</h1>
-            <p className="text-xl text-primary-foreground/90 mb-2">
-              Browse bulk food products from verified suppliers worldwide.
-            </p>
-            <p className="text-sm text-primary-foreground/70">
-              B2B only · Nuts, coffee, cocoa, dried fruits, spices, grains, oils & more.
-            </p>
-          </div>
-        </div>
-
+      <main className="min-h-screen bg-white">
         <ProductsMarketplace products={products} />
       </main>
       <SiteFooter />

@@ -1,24 +1,16 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Building2, MapPin, Package, DollarSign, FileCheck, ShieldCheck, ArrowLeft, Globe, MessageSquare, CheckCircle2, Shield, BarChart3, TrendingUp, TrendingDown, Minus, Calculator } from 'lucide-react'
+import { ChevronRight, TrendingUp, Shield, MapPin, Package, FileCheck, Building2, MessageSquare, Edit } from 'lucide-react'
 import { RFQForm } from '@/components/products/rfq-form'
 import { createClient } from '@/lib/supabase/server'
-import { formatPriceWithConversion, type Currency } from '@/lib/utils/currency'
-import { getOriginComparisonData } from '@/lib/utils/origin-comparison'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 async function getProduct(id: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data: product, error } = await supabase
     .from('products')
@@ -29,7 +21,8 @@ async function getProduct(id: string) {
         company_name,
         country,
         verification_status,
-        verification_level
+        risk_score,
+        subscription_plan
       )
     `)
     .eq('id', id)
@@ -41,6 +34,104 @@ async function getProduct(id: string) {
   }
 
   return product
+}
+
+async function getRelatedProducts(category: string, subcategory: string, currentId: string) {
+  const supabase = await createClient()
+  
+  const { data } = await supabase
+    .from('products')
+    .select(`
+      *,
+      companies:company_id (
+        company_name,
+        verification_status
+      )
+    `)
+    .eq('status', 'published')
+    .eq('category', category)
+    .neq('id', currentId)
+    .limit(6)
+  
+  return data || []
+}
+
+async function getRelatedRFQs(category: string, subcategory: string | null, originCountry: string) {
+  const supabase = await createClient()
+  
+  let query = supabase
+    .from('rfqs')
+    .select('*')
+    .eq('target_category', category)
+    .order('created_at', { ascending: false })
+    .limit(5)
+  
+  if (subcategory) {
+    query = query.eq('target_subcategory', subcategory)
+  }
+  
+  const { data } = await query
+  
+  return data || []
+}
+
+async function getMarketSignals(subcategory: string | null) {
+  const supabase = await createClient()
+  
+  // Get price range for this subcategory
+  let priceQuery = supabase
+    .from('price_history')
+    .select('price, currency')
+    .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+  
+  if (subcategory) {
+    priceQuery = priceQuery.eq('subcategory', subcategory)
+  }
+  
+  const { data: prices } = await priceQuery
+  
+  // Get demand signals
+  let demandQuery = supabase
+    .from('demand_events')
+    .select('event_type')
+    .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+  
+  if (subcategory) {
+    demandQuery = demandQuery.eq('subcategory', subcategory)
+  }
+  
+  const { data: demands } = await demandQuery
+  
+  // Get top destination countries
+  const { data: destinations } = await supabase
+    .from('demand_events')
+    .select('buyer_country')
+    .not('buyer_country', 'is', null)
+    .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+    .limit(100)
+  
+  const destinationCounts = destinations?.reduce((acc: Record<string, number>, item) => {
+    if (item.buyer_country) {
+      acc[item.buyer_country] = (acc[item.buyer_country] || 0) + 1
+    }
+    return acc
+  }, {}) || {}
+  
+  const topDestinations = Object.entries(destinationCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([country]) => country)
+  
+  return {
+    priceRange: prices && prices.length > 0 ? {
+      min: Math.min(...prices.map(p => p.price)),
+      max: Math.max(...prices.map(p => p.price)),
+      currency: prices[0]?.currency || 'EUR'
+    } : null,
+    rfqCount: demands?.filter(d => d.event_type === 'rfq_created').length || 0,
+    enquiryCount: demands?.filter(d => d.event_type === 'view').length || 0,
+    topDestinations
+  }
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -58,33 +149,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-async function logProductViewEvent(data: {
-  event_type: 'view'
-  buyer_id?: string | null
-  buyer_country?: string | null
-  category?: string | null
-  subcategory?: string | null
-  origin_country?: string | null
-  customs_status?: string | null
-  product_id?: string | null
-  metadata?: any
-}): Promise<void> {
-  try {
-    const supabase = await createClient()
-
-    const { error } = await supabase
-      .from('demand_events')
-      .insert([data])
-
-    if (error) {
-      console.warn('[v0] Failed to log demand event:', error.message)
-      return
-    }
-
-    console.log('[v0] Demand event logged: view')
-  } catch (err) {
-    console.warn('[v0] Error logging demand event:', err)
-  }
+function getRiskLabel(score: number | null): { label: string; variant: 'risk-low' | 'risk-medium' | 'risk-high' } {
+  if (!score) return { label: 'Low Risk', variant: 'risk-low' }
+  if (score < 30) return { label: 'Low Risk', variant: 'risk-low' }
+  if (score < 70) return { label: 'Medium Risk', variant: 'risk-medium' }
+  return { label: 'High Risk', variant: 'risk-high' }
 }
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
@@ -97,364 +166,493 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  const isOwnProduct = user && product.company_id === user.id
-  
-  if (!isOwnProduct) {
-    let buyerCountry: string | null = null
+  // Check if user owns this product
+  let isOwner = false
+  if (user) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('company_id')
+      .eq('id', user.id)
+      .single()
     
-    if (user) {
-      const { data: company } = await supabase
-        .from('companies')
-        .select('country, company_type')
-        .eq('user_id', user.id)
-        .single()
-      
-      if (company?.company_type === 'buyer') {
-        buyerCountry = company.country
-      }
-    }
-    
-    await logProductViewEvent({
-      event_type: 'view',
-      buyer_id: user?.id || null,
-      buyer_country: buyerCountry,
-      category: product.category,
-      subcategory: product.product_type || null,
-      origin_country: product.origin_country,
-      customs_status: product.customs_status || null,
-      product_id: product.id,
-      metadata: {
-        price: product.price_per_unit,
-        currency: product.currency,
-        available_quantity: product.available_quantity,
-        supplier_id: product.company_id,
-      },
-    })
+    isOwner = profile?.company_id === product.company_id
   }
 
-  const originComparisons = product.product_type 
-    ? await getOriginComparisonData(product.product_type) 
-    : []
-  
-  const topOrigins = originComparisons
-    .filter(o => o.origin !== product.origin_country)
-    .slice(0, 3)
+  const [relatedProducts, relatedRFQs, marketSignals] = await Promise.all([
+    getRelatedProducts(product.category, product.product_type || '', product.id),
+    getRelatedRFQs(product.category, product.product_type, product.origin_country),
+    getMarketSignals(product.product_type)
+  ])
 
   const supplier = {
     name: product.companies?.company_name || 'Unknown Supplier',
     country: product.companies?.country || 'Unknown',
     verified: product.companies?.verification_status === 'verified',
-    verificationLevel: product.companies?.verification_level,
+    riskScore: product.companies?.risk_score || 0,
+    subscriptionPlan: product.companies?.subscription_plan,
     id: product.companies?.id
   }
 
-  const formattedProduct = {
-    id: product.id,
-    name: product.product_name,
-    category: product.category,
-    origin: product.origin_country,
-    availableQuantity: product.available_quantity,
-    unit: product.unit,
-    priceRange: formatPriceWithConversion(
-      product.price_per_unit, 
-      (product.currency || 'EUR') as Currency,
-      true
-    ),
-    customsStatus: product.customs_status || 'Not specified',
-    certifications: product.certifications || [],
-    supplier: supplier,
-  }
+  const riskInfo = getRiskLabel(supplier.riskScore)
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Link>
-        </div>
-      </header>
-
-      {/* Product Detail */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Images */}
-          <div className="space-y-4">
-            <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
-              <Image
-                src={`/.jpg?key=5zggi&height=600&width=600&query=${encodeURIComponent(product.product_name)}`}
-                alt={product.product_name}
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          {/* Right Column - Details */}
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-start justify-between gap-4 mb-2">
-                <h1 className="text-3xl font-bold text-balance">{product.product_name}</h1>
-                {supplier.verified && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="verified" className="shrink-0 cursor-help">
-                          ✓ Verified
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <p className="text-sm">
-                          Verified by foodXtrade based on company documentation, export history and compliance checks.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-              <p className="text-muted-foreground">{product.category}</p>
-            </div>
-
+    <div className="min-h-screen bg-white">
+      <SiteHeader />
+      
+      <main className="container-boxed py-16">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 text-[12px] text-[#7A7A7A]">
+            <Link href="/products" className="hover:text-[#0D1117] transition-colors">
+              Marketplace
+            </Link>
+            <ChevronRight className="h-3 w-3" />
+            <span>{product.category}</span>
             {product.product_type && (
-              <Link href={`/compare/${product.product_type}`}>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Compare origins for this product type
+              <>
+                <ChevronRight className="h-3 w-3" />
+                <span>{product.product_type}</span>
+              </>
+            )}
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-[#0D1117]">{product.product_name}</span>
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between gap-8 mb-6">
+          <div className="flex-1">
+            <h1 className="text-[32px] font-bold text-[#0D1117] leading-[1.2] tracking-tight mb-3">
+              {product.product_name}
+            </h1>
+            <p className="text-[16px] text-[#7A7A7A] mb-4">
+              {product.category} · {product.product_type || 'General'}
+            </p>
+            
+            {isOwner && (
+              <p className="text-[14px] text-[#7A7A7A] mb-4">
+                You are viewing your own listing
+              </p>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-3 shrink-0">
+            {isOwner ? (
+              <Link href={`/dashboard/products/${product.id}/edit`}>
+                <Button className="bg-[#0D1117] text-white font-bold hover:bg-[#0D1117]/90 h-auto py-3 px-6">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit product
                 </Button>
               </Link>
+            ) : (
+              <>
+                <Button variant="outline" className="border-[#0D1117] text-[#0D1117] font-bold hover:bg-[#F6F6F6] h-auto py-3 px-6">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Contact supplier
+                </Button>
+                <a href="#rfq-section">
+                  <Button className="bg-[#0D1117] text-white font-bold hover:bg-[#0D1117]/90 h-auto py-3 px-6">
+                    Start RFQ for this product
+                  </Button>
+                </a>
+              </>
             )}
+          </div>
+        </div>
 
-            {/* Supplier Info */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Building2 className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <Link 
-                      href={`/companies/${supplier.id}`}
-                      className="font-medium hover:underline flex items-center gap-2"
-                    >
-                      {supplier.name}
-                      {supplier.verified && (
-                        <CheckCircle2 className="h-4 w-4 text-[#FFB84D] flex-shrink-0" />
-                      )}
-                    </Link>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Globe className="h-3 w-3" />
-                      {supplier.country}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="flex items-center gap-3 mb-12">
+          {product.customs_status && (
+            <Badge variant="customs">{product.customs_status}</Badge>
+          )}
+          {supplier.verified && (
+            <Badge variant="verified">✓ Verified Supplier</Badge>
+          )}
+          <Badge variant={riskInfo.variant}>
+            <Shield className="h-3 w-3 mr-1" />
+            {riskInfo.label}
+          </Badge>
+        </div>
 
-            {/* Key Details */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Origin</p>
-                  <p className="font-medium">{product.origin_country}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                <Package className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Available Quantity</p>
-                  <p className="font-medium">{product.available_quantity?.toLocaleString()} {product.unit}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                <DollarSign className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Price</p>
-                  <p className="font-medium">
-                    {formatPriceWithConversion(
-                      product.price_per_unit,
-                      (product.currency || 'EUR') as Currency,
-                      true
-                    )} per {product.unit}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
-                <FileCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Customs Status</p>
-                  <p className="font-medium">
-                    {product.customs_status && (
-                      <Badge variant="customs">{product.customs_status}</Badge>
-                    )}
-                    {!product.customs_status && 'Not specified'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Certifications */}
-            {product.certifications && product.certifications.length > 0 && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">Certifications</h3>
+        <div className="grid lg:grid-cols-[1fr,400px] gap-8 mb-16">
+          {/* Left column */}
+          <div className="space-y-8">
+            {/* Product Overview */}
+            <div className="bg-white border border-[#E2E2E2] rounded-md p-8">
+              <h2 className="text-[20px] font-bold text-[#0D1117] mb-4">Product overview</h2>
+              <p className="text-[16px] text-[#0D1117] leading-relaxed mb-6">
+                {product.product_name} from {product.origin_country}. High-quality {product.category.toLowerCase()} 
+                suitable for commercial use. {product.product_type && `Product type: ${product.product_type}.`}
+              </p>
+              
+              {product.certifications && product.certifications.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {product.certifications.map((cert: string) => (
-                    <Badge key={cert} variant="outline" className="bg-secondary/10">
+                    <Badge key={cert} variant="outline" className="text-[12px]">
                       {cert}
                     </Badge>
                   ))}
                 </div>
+              )}
+            </div>
+
+            {/* Specifications */}
+            <div className="bg-white border border-[#E2E2E2] rounded-md p-8">
+              <h2 className="text-[20px] font-bold text-[#0D1117] mb-6">Specifications</h2>
+              <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
+                <div>
+                  <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Category</div>
+                  <div className="text-[16px] text-[#0D1117] font-medium">{product.category}</div>
+                </div>
+                
+                {product.product_type && (
+                  <div>
+                    <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Subcategory</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">{product.product_type}</div>
+                  </div>
+                )}
+                
+                <div>
+                  <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Origin</div>
+                  <div className="text-[16px] text-[#0D1117] font-medium">{product.origin_country}</div>
+                </div>
+                
+                {product.crop_year && (
+                  <div>
+                    <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Crop Year</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">{product.crop_year}</div>
+                  </div>
+                )}
+                
+                {product.unit && (
+                  <div>
+                    <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Unit</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">{product.unit}</div>
+                  </div>
+                )}
+                
+                {product.shelf_life && (
+                  <div>
+                    <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Shelf Life</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">{product.shelf_life} days</div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Packaging & MOQ */}
+            <div className="bg-white border border-[#E2E2E2] rounded-md p-8">
+              <h2 className="text-[20px] font-bold text-[#0D1117] mb-6">Packaging & quantity</h2>
+              <div className="space-y-4">
+                {product.min_order_quantity && (
+                  <div className="flex items-start gap-3">
+                    <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
+                    <div>
+                      <div className="text-[14px] text-[#7A7A7A]">Minimum order</div>
+                      <div className="text-[16px] text-[#0D1117] font-medium">
+                        {product.min_order_quantity} {product.min_order_unit || product.unit}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {product.available_quantity && (
+                  <div className="flex items-start gap-3">
+                    <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
+                    <div>
+                      <div className="text-[14px] text-[#7A7A7A]">Available quantity</div>
+                      <div className="text-[16px] text-[#0D1117] font-medium">
+                        {product.available_quantity.toLocaleString()} {product.unit}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {product.packaging && (
+                  <div className="flex items-start gap-3">
+                    <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
+                    <div>
+                      <div className="text-[14px] text-[#7A7A7A]">Packaging</div>
+                      <div className="text-[16px] text-[#0D1117] font-medium">{product.packaging}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {product.pallet_type && (
+                  <div className="flex items-start gap-3">
+                    <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
+                    <div>
+                      <div className="text-[14px] text-[#7A7A7A]">Pallet type</div>
+                      <div className="text-[16px] text-[#0D1117] font-medium">{product.pallet_type}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div className="space-y-6">
+            {/* Supplier Card */}
+            <div className="bg-[#F6F6F6] border border-[#E2E2E2] rounded-md p-6">
+              <div className="flex items-start gap-3 mb-6">
+                <div className="h-12 w-12 rounded-full bg-[#0D1117] flex items-center justify-center">
+                  <Building2 className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <Link 
+                    href={`/companies/${supplier.id}`}
+                    className="text-[18px] font-bold text-[#0D1117] hover:underline block mb-1"
+                  >
+                    {supplier.name}
+                  </Link>
+                  <div className="flex items-center gap-1 text-[14px] text-[#7A7A7A]">
+                    <MapPin className="h-3 w-3" />
+                    {supplier.country}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-[14px] text-[#7A7A7A]">Verification</span>
+                  {supplier.verified ? (
+                    <Badge variant="verified">✓ Verified</Badge>
+                  ) : (
+                    <span className="text-[14px] text-[#7A7A7A]">Not verified</span>
+                  )}
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-[14px] text-[#7A7A7A]">Risk level</span>
+                  <Badge variant={riskInfo.variant}>{riskInfo.label}</Badge>
+                </div>
+                
+                {supplier.subscriptionPlan && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] text-[#7A7A7A]">Plan</span>
+                    <span className="text-[14px] text-[#0D1117] font-medium capitalize">{supplier.subscriptionPlan}</span>
+                  </div>
+                )}
+              </div>
+              
+              <Link href={`/companies/${supplier.id}`}>
+                <Button variant="outline" className="w-full border-[#0D1117] text-[#0D1117] font-medium">
+                  View supplier profile
+                </Button>
+              </Link>
+            </div>
+
+            {/* Customs & Logistics */}
+            <div className="bg-white border border-[#E2E2E2] rounded-md p-6">
+              <h3 className="text-[18px] font-bold text-[#0D1117] mb-4">Customs & logistics</h3>
+              <div className="space-y-3">
+                {product.customs_status && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] text-[#7A7A7A]">Customs status</span>
+                    <Badge variant="customs">{product.customs_status}</Badge>
+                  </div>
+                )}
+                
+                {product.incoterm && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] text-[#7A7A7A]">Incoterms</span>
+                    <span className="text-[14px] text-[#0D1117] font-medium">{product.incoterm}</span>
+                  </div>
+                )}
+                
+                {product.warehouse_country && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] text-[#7A7A7A]">Warehouse</span>
+                    <span className="text-[14px] text-[#0D1117] font-medium">
+                      {product.warehouse_city ? `${product.warehouse_city}, ` : ''}{product.warehouse_country}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Logistics Calculator */}
-        <div className="mt-12 max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5" />
-                Logistics Calculator
-              </CardTitle>
-              <CardDescription>
-                Calculate container loads and shipping requirements for this product
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href={`/logistics?product_id=${product.id}`}>
-                <Button className="w-full bg-[#FFB84D] text-black hover:bg-[#FFB84D]/90">
-                  Calculate load →
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+        <div className="bg-[#F6F6F6] -mx-8 px-8 py-16 mb-16">
+          <div className="max-w-[1400px] mx-auto">
+            <h2 className="text-[24px] font-bold text-[#0D1117] mb-8">
+              Market signals for this product category
+            </h2>
+            
+            <div className="bg-white border border-[#E2E2E2] rounded-md p-8">
+              <div className="grid md:grid-cols-3 gap-8">
+                {/* Price Range */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-5 w-5 text-[#3DA9FC]" />
+                    <h3 className="text-[16px] font-bold text-[#0D1117]">Price range (last 30 days)</h3>
+                  </div>
+                  {marketSignals.priceRange ? (
+                    <div className="space-y-1">
+                      <div className="text-[24px] font-bold text-[#0D1117]">
+                        {marketSignals.priceRange.currency} {marketSignals.priceRange.min.toFixed(2)} - {marketSignals.priceRange.max.toFixed(2)}
+                      </div>
+                      <div className="text-[14px] text-[#7A7A7A]">per unit</div>
+                    </div>
+                  ) : (
+                    <div className="text-[14px] text-[#7A7A7A]">No price data available</div>
+                  )}
+                </div>
+
+                {/* Recent Demand */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileCheck className="h-5 w-5 text-[#3DA9FC]" />
+                    <h3 className="text-[16px] font-bold text-[#0D1117]">Recent demand</h3>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[24px] font-bold text-[#0D1117]">
+                      {marketSignals.rfqCount} RFQs
+                    </div>
+                    <div className="text-[14px] text-[#7A7A7A]">
+                      {marketSignals.enquiryCount} product views
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Destinations */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="h-5 w-5 text-[#3DA9FC]" />
+                    <h3 className="text-[16px] font-bold text-[#0D1117]">Top destinations</h3>
+                  </div>
+                  {marketSignals.topDestinations.length > 0 ? (
+                    <div className="space-y-1">
+                      {marketSignals.topDestinations.map((country, i) => (
+                        <div key={i} className="text-[14px] text-[#0D1117]">
+                          {i + 1}. {country}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-[14px] text-[#7A7A7A]">No destination data</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {topOrigins.length > 0 && product.product_type && (
-          <div className="mt-12 max-w-4xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Compare Origins
-                </CardTitle>
-                <CardDescription>
-                  See how different origins compare for {product.product_type}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-4 mb-4">
-                  {topOrigins.map((origin) => {
-                    const trendIcon = origin.trend === null ? (
-                      <Minus className="h-4 w-4 text-muted-foreground" />
-                    ) : origin.trend > 0 ? (
-                      <TrendingUp className="h-4 w-4 text-red-500" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 text-green-500" />
-                    )
-
-                    return (
-                      <div 
-                        key={origin.origin}
-                        className="p-4 border rounded-lg hover:border-[#FFB84D]/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold">{origin.origin}</h4>
-                          {trendIcon}
-                        </div>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Avg. Price:</span>
-                            <span className="font-medium">€{origin.avgPrice.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Verified Suppliers:</span>
-                            <span className="font-medium">{origin.verifiedSupplierCount}</span>
-                          </div>
-                          {origin.trend !== null && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">30-day trend:</span>
-                              <span className={`font-medium ${origin.trend > 0 ? 'text-red-500' : 'text-green-500'}`}>
-                                {origin.trend > 0 ? '+' : ''}{origin.trend.toFixed(1)}%
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-                
-                <Link href={`/compare/${product.product_type}`}>
-                  <Button className="w-full" variant="outline">
-                    Compare all origins →
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+        {relatedRFQs.length > 0 && (
+          <div className="mb-16">
+            <h2 className="text-[24px] font-bold text-[#0D1117] mb-6">
+              RFQs related to this product
+            </h2>
+            
+            <div className="bg-white border border-[#E2E2E2] rounded-md overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-[#F6F6F6] border-b border-[#E2E2E2]">
+                  <tr>
+                    <th className="text-left text-[12px] uppercase text-[#7A7A7A] font-bold px-6 py-4">Destination</th>
+                    <th className="text-left text-[12px] uppercase text-[#7A7A7A] font-bold px-6 py-4">Quantity</th>
+                    <th className="text-left text-[12px] uppercase text-[#7A7A7A] font-bold px-6 py-4">Origin</th>
+                    <th className="text-left text-[12px] uppercase text-[#7A7A7A] font-bold px-6 py-4">Created</th>
+                    <th className="text-right text-[12px] uppercase text-[#7A7A7A] font-bold px-6 py-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {relatedRFQs.map((rfq) => (
+                    <tr key={rfq.id} className="border-b border-[#E2E2E2] last:border-0">
+                      <td className="px-6 py-4 text-[14px] text-[#0D1117]">{rfq.buyer_country || 'N/A'}</td>
+                      <td className="px-6 py-4 text-[14px] text-[#0D1117]">
+                        {rfq.desired_quantity} {rfq.unit}
+                      </td>
+                      <td className="px-6 py-4 text-[14px] text-[#0D1117]">{rfq.target_country || 'Any'}</td>
+                      <td className="px-6 py-4 text-[14px] text-[#7A7A7A]">
+                        {new Date(rfq.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link 
+                          href={`/dashboard/rfqs`}
+                          className="text-[14px] text-[#0D1117] font-medium hover:underline"
+                        >
+                          View RFQ
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
-        <div className="mt-12 max-w-4xl mx-auto">
-          <Card className="border-2 border-[#9FE870]/20">
-            <CardHeader className="bg-gradient-to-r from-black to-gray-900 text-white">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-[#9FE870] rounded-full flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-black" />
+        {!isOwner && (
+          <div id="rfq-section" className="mb-16">
+            <div className="bg-white border border-[#E2E2E2] rounded-md p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-12 w-12 bg-[#0D1117] rounded-md flex items-center justify-center">
+                  <MessageSquare className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">Request a Quote for This Product</CardTitle>
-                  <CardDescription className="text-gray-300 mt-1">
+                  <h2 className="text-[24px] font-bold text-[#0D1117]">Request a quote for this product</h2>
+                  <p className="text-[14px] text-[#7A7A7A]">
                     Connect directly with {supplier.name} to negotiate pricing and terms
-                  </CardDescription>
+                  </p>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <RFQForm product={formattedProduct} />
-            </CardContent>
-          </Card>
-        </div>
+              
+              <RFQForm 
+                product={{
+                  id: product.id,
+                  name: product.product_name,
+                  category: product.category,
+                  origin: product.origin_country,
+                  availableQuantity: product.available_quantity,
+                  unit: product.unit,
+                  priceRange: product.price_per_unit ? `${product.currency || 'EUR'} ${product.price_per_unit}` : 'Contact for price',
+                  customsStatus: product.customs_status || 'Not specified',
+                  certifications: product.certifications || [],
+                  supplier: supplier
+                }}
+              />
+            </div>
+          </div>
+        )}
 
-        {/* Additional Information */}
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Secure Transactions</CardTitle>
-              <CardDescription>
-                All quotes and transactions are protected and monitored for your safety
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Direct Communication</CardTitle>
-              <CardDescription>
-                Connect directly with verified suppliers to negotiate terms
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quality Guaranteed</CardTitle>
-              <CardDescription>
-                All suppliers are vetted and products meet international standards
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+        {relatedProducts.length > 0 && (
+          <div>
+            <h2 className="text-[24px] font-bold text-[#0D1117] mb-6">Related products</h2>
+            
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedProducts.map((relProd) => (
+                <Link 
+                  key={relProd.id}
+                  href={`/products/${relProd.id}`}
+                  className="bg-white border border-[#E2E2E2] rounded-md p-6 hover:border-[#0D1117] transition-colors"
+                >
+                  <h3 className="text-[18px] font-bold text-[#0D1117] mb-2 line-clamp-2">
+                    {relProd.product_name}
+                  </h3>
+                  
+                  <div className="flex items-center gap-2 mb-3 text-[14px] text-[#7A7A7A]">
+                    <MapPin className="h-3 w-3" />
+                    {relProd.origin_country}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                    {relProd.customs_status && (
+                      <Badge variant="customs" className="text-[10px]">{relProd.customs_status}</Badge>
+                    )}
+                    {relProd.companies?.verification_status === 'verified' && (
+                      <Badge variant="verified" className="text-[10px]">✓</Badge>
+                    )}
+                  </div>
+                  
+                  <div className="text-[14px] text-[#7A7A7A]">
+                    {relProd.companies?.company_name || 'Unknown Supplier'}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

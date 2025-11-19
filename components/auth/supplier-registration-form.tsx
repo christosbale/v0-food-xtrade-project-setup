@@ -177,6 +177,21 @@ export function SupplierRegistrationForm() {
 
       console.log('[v0] Company created successfully:', companyData)
       
+      try {
+        const welcomeResponse = await fetch('/api/email/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            userType: 'supplier'
+          })
+        })
+        console.log('[v0] Welcome email sent:', welcomeResponse.ok)
+      } catch (emailError) {
+        console.error('[v0] Failed to send welcome email:', emailError)
+        // Don't fail registration if email fails
+      }
+      
       router.push('/register/success')
     } catch (error) {
       console.error('[v0] Unexpected registration error:', error)

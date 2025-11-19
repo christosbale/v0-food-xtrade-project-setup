@@ -3,12 +3,39 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { logPriceHistory } from '@/lib/utils/price-history'
+import { getCurrentCompany } from '@/lib/auth/current-company'
 
 export async function createProduct(productData: any) {
   try {
     console.log('[v0] Creating product with data:', productData)
     
     const supabase = await createClient()
+    
+    const session = await getCurrentCompany()
+    
+    if (!session?.company) {
+      return {
+        success: false,
+        error: 'You must have a company profile to create products.'
+      }
+    }
+    
+    if (session.company.company_type !== 'supplier') {
+      return {
+        success: false,
+        error: 'Only suppliers can create products.'
+      }
+    }
+    
+    if (session.company.verification_status !== 'verified') {
+      return {
+        success: false,
+        error: 'Your company must be verified before you can create products. Please complete the verification process or contact support.'
+      }
+    }
+    
+    // Ensure the product is being created for the current user's company
+    productData.company_id = session.company.id
     
     // Insert product
     const { data: product, error: insertError } = await supabase

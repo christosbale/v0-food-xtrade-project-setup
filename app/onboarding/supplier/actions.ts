@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendSupplierOnboardingCompleteEmail } from '@/lib/email'
 
 export interface OnboardSupplierData {
   plan: 'basic' | 'pro' | 'premium'
@@ -28,7 +29,7 @@ export async function onboardSupplier(data: OnboardSupplierData) {
 
   const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
-    .select('id, role')
+    .select('id, role, email')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -49,7 +50,9 @@ export async function onboardSupplier(data: OnboardSupplierData) {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    // Step 3: If company exists, update it
+    let companyId: string
+
+    // If company exists, update it
     if (existingCompany) {
       const { error: updateError } = await supabase
         .from('companies')
@@ -73,56 +76,69 @@ export async function onboardSupplier(data: OnboardSupplierData) {
         }
       }
 
-      revalidatePath('/dashboard')
-      return { 
-        success: true, 
-        companyId: existingCompany.id 
+      companyId = existingCompany.id
+    } else {
+      // If company doesn't exist, create new company
+      const { data: newCompany, error: insertError } = await supabase
+        .from('companies')
+        .insert({
+          user_id: user.id,
+          company_name: data.companyName,
+          country: data.country,
+          city: data.city,
+          website: data.website || null,
+          subscription_plan: data.plan,
+          company_type: 'supplier',
+          verification_status: 'pending',
+          onboarding_started_at: now,
+          onboarding_completed: true,
+          onboarding_completed_at: now,
+        })
+        .select('id')
+        .single()
+
+      if (insertError || !newCompany) {
+        console.error('[v0] Error creating company:', insertError)
+        return { 
+          success: false, 
+          error: 'Failed to create company. Please try again.' 
+        }
+      }
+
+      companyId = newCompany.id
+
+      // Update user_profiles with role
+      const { error: profileUpdateError } = await supabase
+        .from('user_profiles')
+        .update({
+          role: profile.role === 'admin' ? 'admin' : 'supplier',
+        })
+        .eq('id', user.id)
+
+      if (profileUpdateError) {
+        console.error('[v0] Error updating user profile:', profileUpdateError)
       }
     }
 
-    // Step 4: If company doesn't exist, create new company
-    const { data: newCompany, error: insertError } = await supabase
-      .from('companies')
-      .insert({
-        user_id: user.id,
-        company_name: data.companyName,
-        country: data.country,
-        city: data.city,
-        website: data.website || null,
-        subscription_plan: data.plan,
-        company_type: 'supplier',
-        verification_status: 'pending',
-        onboarding_started_at: now,
-        onboarding_completed: true,
-        onboarding_completed_at: now,
-      })
-      .select('id')
-      .single()
-
-    if (insertError || !newCompany) {
-      console.error('[v0] Error creating company:', insertError)
-      return { 
-        success: false, 
-        error: 'Failed to create company. Please try again.' 
+    try {
+      const userEmail = profile.email || user.email
+      if (userEmail) {
+        await sendSupplierOnboardingCompleteEmail(
+          userEmail,
+          data.companyName,
+          data.plan
+        )
+        console.log('[v0] Onboarding complete email sent to:', userEmail)
       }
-    }
-
-    // Update user_profiles with role
-    const { error: profileUpdateError } = await supabase
-      .from('user_profiles')
-      .update({
-        role: profile.role === 'admin' ? 'admin' : 'supplier',
-      })
-      .eq('id', user.id)
-
-    if (profileUpdateError) {
-      console.error('[v0] Error updating user profile:', profileUpdateError)
+    } catch (emailError) {
+      console.error('[v0] Error sending onboarding complete email:', emailError)
+      // Don't fail the onboarding if email fails
     }
 
     revalidatePath('/dashboard')
     return { 
       success: true, 
-      companyId: newCompany.id 
+      companyId 
     }
   } catch (error) {
     console.error('[v0] Unexpected error during onboarding:', error)

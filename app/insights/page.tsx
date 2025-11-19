@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 import { AIMarketSummary } from '@/components/insights/ai-market-summary'
 import Link from 'next/link'
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 interface TopCommodity {
   category: string
@@ -269,334 +271,339 @@ export default async function InsightsPage({
   const insights = await getMarketInsights(timeRange)
   
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container-boxed py-24">
-        {/* Header */}
-        <div className="mb-20">
-          <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="h-10 w-10 text-[#FFD036]" />
-            <h1 className="text-display-medium font-bold text-[#0D1117]">
-              Market Insights
-            </h1>
-          </div>
-          <p className="text-body-large text-[#7A7A7A] max-w-3xl mb-12">
-            Real-time buyer demand intelligence across categories, origins and destination markets.
-          </p>
-          
-          {/* Time range filter - minimal button design */}
-          <div className="flex items-center gap-3">
-            <span className="text-body-medium text-[#7A7A7A]">Time period:</span>
-            <div className="flex gap-2">
-              <Link
-                href="/insights?range=7"
-                className={`px-5 py-2 text-sm font-bold transition-all ${
-                  timeRange === 7
-                    ? 'bg-[#0D1117] text-white'
-                    : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
-                }`}
-                style={{ borderRadius: '6px' }}
-              >
-                7 Days
-              </Link>
-              <Link
-                href="/insights?range=30"
-                className={`px-5 py-2 text-sm font-bold transition-all ${
-                  timeRange === 30
-                    ? 'bg-[#0D1117] text-white'
-                    : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
-                }`}
-                style={{ borderRadius: '6px' }}
-              >
-                30 Days
-              </Link>
-              <Link
-                href="/insights?range=90"
-                className={`px-5 py-2 text-sm font-bold transition-all ${
-                  timeRange === 90
-                    ? 'bg-[#0D1117] text-white'
-                    : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
-                }`}
-                style={{ borderRadius: '6px' }}
-              >
-                90 Days
-              </Link>
+    <>
+      <SiteHeader />
+      <div className="min-h-screen bg-white">
+        <div className="container-boxed py-24">
+          {/* Header */}
+          <div className="mb-20">
+            <div className="flex items-center gap-3 mb-6">
+              <Sparkles className="h-10 w-10 text-[#FFD036]" />
+              <h1 className="text-display-medium font-bold text-[#0D1117]">
+                Market Insights
+              </h1>
+            </div>
+            
+            <p className="text-body-large text-[#7A7A7A] max-w-3xl mb-12">
+              Real-time buyer demand intelligence across categories, origins and destination markets.
+            </p>
+            
+            {/* Time range filter - minimal button design */}
+            <div className="flex items-center gap-3">
+              <span className="text-body-medium text-[#7A7A7A]">Time period:</span>
+              <div className="flex gap-2">
+                <Link
+                  href="/insights?range=7"
+                  className={`px-5 py-2 text-sm font-bold transition-all ${
+                    timeRange === 7
+                      ? 'bg-[#0D1117] text-white'
+                      : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
+                  }`}
+                  style={{ borderRadius: '6px' }}
+                >
+                  7 Days
+                </Link>
+                <Link
+                  href="/insights?range=30"
+                  className={`px-5 py-2 text-sm font-bold transition-all ${
+                    timeRange === 30
+                      ? 'bg-[#0D1117] text-white'
+                      : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
+                  }`}
+                  style={{ borderRadius: '6px' }}
+                >
+                  30 Days
+                </Link>
+                <Link
+                  href="/insights?range=90"
+                  className={`px-5 py-2 text-sm font-bold transition-all ${
+                    timeRange === 90
+                      ? 'bg-[#0D1117] text-white'
+                      : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
+                  }`}
+                  style={{ borderRadius: '6px' }}
+                >
+                  90 Days
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* AI Market Summary section */}
-        <AIMarketSummary timeRange={timeRange} />
-        
-        <div className="space-y-20">
-          {/* 1. Top demanded commodities - white background */}
-          {insights && (
-            <section className="bg-white">
-              <div className="border border-[#E2E2E2] p-8">
-                <div className="mb-8">
-                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
-                    Top Demanded Commodities
-                  </h2>
-                  <p className="text-body-medium text-[#7A7A7A]">
-                    Most searched, requested and viewed products
-                  </p>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[#E2E2E2]">
-                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Rank
-                        </th>
-                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Category
-                        </th>
-                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Subcategory
-                        </th>
-                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Total
-                        </th>
-                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Searches
-                        </th>
-                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          RFQs
-                        </th>
-                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Views
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {insights.topCommodities.map((item, index) => (
-                        <tr
-                          key={`${item.category}:${item.subcategory}`}
-                          className="border-b border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors"
-                        >
-                          <td className="py-4 px-3">
-                            <span className="text-sm font-bold text-[#0D1117]">
-                              {index + 1}
-                            </span>
-                          </td>
-                          <td className="py-4 px-3 text-sm text-[#7A7A7A]">
-                            {item.categoryLabel}
-                          </td>
-                          <td className="py-4 px-3 text-sm font-medium text-[#0D1117]">
-                            {item.subcategoryLabel}
-                          </td>
-                          <td className="py-4 px-3 text-right text-base font-bold text-[#0D1117]">
-                            {item.totalEvents}
-                          </td>
-                          <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
-                            {item.searches}
-                          </td>
-                          <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
-                            {item.rfqs}
-                          </td>
-                          <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
-                            {item.views}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </section>
-          )}
           
-          {/* 2. Rising demand (momentum) - SoftGrey background */}
-          {insights && (
-            <section className="bg-[#F6F6F6] -mx-8 px-8 py-12">
-              <div className="container-boxed">
-                <div className="mb-8">
-                  <div className="flex items-center gap-3 mb-3">
-                    <TrendingUp className="h-8 w-8 text-green-600" />
-                    <h2 className="text-headline-medium font-bold text-[#0D1117]">
-                      Trending Up
+          {/* AI Market Summary section */}
+          <AIMarketSummary timeRange={timeRange} />
+          
+          <div className="space-y-20">
+            {/* 1. Top demanded commodities - white background */}
+            {insights && (
+              <section className="bg-white">
+                <div className="border border-[#E2E2E2] p-8">
+                  <div className="mb-8">
+                    <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                      Top Demanded Commodities
                     </h2>
+                    <p className="text-body-medium text-[#7A7A7A]">
+                      Most searched, requested and viewed products
+                    </p>
                   </div>
-                  <p className="text-body-medium text-[#7A7A7A]">
-                    Commodities with the highest demand growth
-                  </p>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#E2E2E2]">
+                          <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Rank
+                          </th>
+                          <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Category
+                          </th>
+                          <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Subcategory
+                          </th>
+                          <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Total
+                          </th>
+                          <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Searches
+                          </th>
+                          <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            RFQs
+                          </th>
+                          <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Views
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {insights.topCommodities.map((item, index) => (
+                          <tr
+                            key={`${item.category}:${item.subcategory}`}
+                            className="border-b border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors"
+                          >
+                            <td className="py-4 px-3">
+                              <span className="text-sm font-bold text-[#0D1117]">
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td className="py-4 px-3 text-sm text-[#7A7A7A]">
+                              {item.categoryLabel}
+                            </td>
+                            <td className="py-4 px-3 text-sm font-medium text-[#0D1117]">
+                              {item.subcategoryLabel}
+                            </td>
+                            <td className="py-4 px-3 text-right text-base font-bold text-[#0D1117]">
+                              {item.totalEvents}
+                            </td>
+                            <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
+                              {item.searches}
+                            </td>
+                            <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
+                              {item.rfqs}
+                            </td>
+                            <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
+                              {item.views}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                
-                <div className="grid gap-3">
-                  {insights.risingDemand.map((item) => (
-                    <div
-                      key={item.subcategory}
-                      className="flex items-center justify-between p-6 bg-white border border-[#E2E2E2] hover:border-[#0D1117] transition-colors"
-                    >
-                      <div>
-                        <h3 className="text-base font-bold text-[#0D1117] mb-1">
+              </section>
+            )}
+            
+            {/* 2. Rising demand (momentum) - SoftGrey background */}
+            {insights && (
+              <section className="bg-[#F6F6F6] -mx-8 px-8 py-12">
+                <div className="container-boxed">
+                  <div className="mb-8">
+                    <div className="flex items-center gap-3 mb-3">
+                      <TrendingUp className="h-8 w-8 text-green-600" />
+                      <h2 className="text-headline-medium font-bold text-[#0D1117]">
+                        Trending Up
+                      </h2>
+                    </div>
+                    <p className="text-body-medium text-[#7A7A7A]">
+                      Commodities with the highest demand growth
+                    </p>
+                  </div>
+                  
+                  <div className="grid gap-3">
+                    {insights.risingDemand.map((item) => (
+                      <div
+                        key={item.subcategory}
+                        className="flex items-center justify-between p-6 bg-white border border-[#E2E2E2] hover:border-[#0D1117] transition-colors"
+                      >
+                        <div>
+                          <h3 className="text-base font-bold text-[#0D1117] mb-1">
+                            {item.subcategoryLabel}
+                          </h3>
+                          <p className="text-sm text-[#7A7A7A]">
+                            {item.currentEvents} events (vs {item.previousEvents} previous period)
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-green-600" />
+                          <span className="text-xl font-bold text-green-600">
+                            +{item.percentChange.toFixed(0)}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+            
+            {/* 3. Demand by destination country - white background */}
+            {insights && (
+              <section className="bg-white">
+                <div className="border border-[#E2E2E2] p-8">
+                  <div className="mb-8">
+                    <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                      Demand by Destination Country
+                    </h2>
+                    <p className="text-body-medium text-[#7A7A7A]">
+                      Where buyers are located and what they're requesting
+                    </p>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#E2E2E2]">
+                          <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Country
+                          </th>
+                          <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            RFQs
+                          </th>
+                          <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                            Top Requested Commodities
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {insights.countryDemand.map((item) => (
+                          <tr
+                            key={item.country}
+                            className="border-b border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors"
+                          >
+                            <td className="py-4 px-3 text-sm font-medium text-[#0D1117]">
+                              {item.country}
+                            </td>
+                            <td className="py-4 px-3 text-right text-base font-bold text-[#0D1117]">
+                              {item.rfqCount}
+                            </td>
+                            <td className="py-4 px-3 text-sm text-[#7A7A7A]">
+                              {item.topSubcategories.join(', ') || 'N/A'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            )}
+            
+            {/* 4. Origin preference insights - SoftGrey background */}
+            {insights && (
+              <section className="bg-[#F6F6F6] -mx-8 px-8 py-12">
+                <div className="container-boxed">
+                  <div className="mb-8">
+                    <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                      Origin Preference Insights
+                    </h2>
+                    <p className="text-body-medium text-[#7A7A7A]">
+                      Which origins buyers prefer for each commodity
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-8">
+                    {insights.originPreferences.map((item) => (
+                      <div key={item.subcategory} className="bg-white border border-[#E2E2E2] p-6">
+                        <h3 className="text-base font-bold text-[#0D1117] mb-6">
                           {item.subcategoryLabel}
                         </h3>
-                        <p className="text-sm text-[#7A7A7A]">
-                          {item.currentEvents} events (vs {item.previousEvents} previous period)
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-green-600" />
-                        <span className="text-xl font-bold text-green-600">
-                          +{item.percentChange.toFixed(0)}%
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-          
-          {/* 3. Demand by destination country - white background */}
-          {insights && (
-            <section className="bg-white">
-              <div className="border border-[#E2E2E2] p-8">
-                <div className="mb-8">
-                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
-                    Demand by Destination Country
-                  </h2>
-                  <p className="text-body-medium text-[#7A7A7A]">
-                    Where buyers are located and what they're requesting
-                  </p>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-[#E2E2E2]">
-                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Country
-                        </th>
-                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          RFQs
-                        </th>
-                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
-                          Top Requested Commodities
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {insights.countryDemand.map((item) => (
-                        <tr
-                          key={item.country}
-                          className="border-b border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors"
-                        >
-                          <td className="py-4 px-3 text-sm font-medium text-[#0D1117]">
-                            {item.country}
-                          </td>
-                          <td className="py-4 px-3 text-right text-base font-bold text-[#0D1117]">
-                            {item.rfqCount}
-                          </td>
-                          <td className="py-4 px-3 text-sm text-[#7A7A7A]">
-                            {item.topSubcategories.join(', ') || 'N/A'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </section>
-          )}
-          
-          {/* 4. Origin preference insights - SoftGrey background */}
-          {insights && (
-            <section className="bg-[#F6F6F6] -mx-8 px-8 py-12">
-              <div className="container-boxed">
-                <div className="mb-8">
-                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
-                    Origin Preference Insights
-                  </h2>
-                  <p className="text-body-medium text-[#7A7A7A]">
-                    Which origins buyers prefer for each commodity
-                  </p>
-                </div>
-                
-                <div className="space-y-8">
-                  {insights.originPreferences.map((item) => (
-                    <div key={item.subcategory} className="bg-white border border-[#E2E2E2] p-6">
-                      <h3 className="text-base font-bold text-[#0D1117] mb-6">
-                        {item.subcategoryLabel}
-                      </h3>
-                      <div className="grid gap-3">
-                        {item.origins.map((origin) => (
-                          <div
-                            key={origin.country}
-                            className="flex items-center gap-6"
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="text-sm font-medium text-[#0D1117] min-w-[120px]">
-                                  {origin.country}
-                                </span>
-                                <Badge variant="outline" className="text-xs">
-                                  {origin.count}
-                                </Badge>
+                        <div className="grid gap-3">
+                          {item.origins.map((origin) => (
+                            <div
+                              key={origin.country}
+                              className="flex items-center gap-6"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <span className="text-sm font-medium text-[#0D1117] min-w-[120px]">
+                                    {origin.country}
+                                  </span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {origin.count}
+                                  </Badge>
+                                </div>
+                                <div className="w-full bg-[#E2E2E2] h-1.5">
+                                  <div
+                                    className="bg-[#0D1117] h-1.5 transition-all"
+                                    style={{ width: `${origin.percentage}%` }}
+                                  />
+                                </div>
                               </div>
-                              <div className="w-full bg-[#E2E2E2] h-1.5">
-                                <div
-                                  className="bg-[#0D1117] h-1.5 transition-all"
-                                  style={{ width: `${origin.percentage}%` }}
-                                />
-                              </div>
+                              <span className="text-base font-bold text-[#0D1117] min-w-[60px] text-right">
+                                {origin.percentage.toFixed(0)}%
+                              </span>
                             </div>
-                            <span className="text-base font-bold text-[#0D1117] min-w-[60px] text-right">
-                              {origin.percentage.toFixed(0)}%
-                            </span>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </section>
-          )}
+              </section>
+            )}
+            
+            {/* 5. Fresh produce specific insight - white background */}
+            {insights && insights.freshDemand.length > 0 && (
+              <section className="bg-white">
+                <div className="border border-[#E2E2E2] p-8">
+                  <div className="mb-8">
+                    <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                      Fresh Produce Trends
+                    </h2>
+                    <p className="text-body-medium text-[#7A7A7A]">
+                      Most demanded fresh produce items
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {insights.freshDemand.map((item) => (
+                      <div
+                        key={item.subcategory}
+                        className="flex items-center justify-between p-5 bg-[#F6F6F6] border border-[#E2E2E2] hover:border-[#0D1117] transition-colors"
+                      >
+                        <span className="text-sm font-medium text-[#0D1117]">
+                          {item.subcategoryLabel}
+                        </span>
+                        <Badge className="bg-green-600 text-white text-xs">
+                          {item.count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+          </div>
           
-          {/* 5. Fresh produce specific insight - white background */}
-          {insights && insights.freshDemand.length > 0 && (
-            <section className="bg-white">
-              <div className="border border-[#E2E2E2] p-8">
-                <div className="mb-8">
-                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
-                    Fresh Produce Trends
-                  </h2>
-                  <p className="text-body-medium text-[#7A7A7A]">
-                    Most demanded fresh produce items
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {insights.freshDemand.map((item) => (
-                    <div
-                      key={item.subcategory}
-                      className="flex items-center justify-between p-5 bg-[#F6F6F6] border border-[#E2E2E2] hover:border-[#0D1117] transition-colors"
-                    >
-                      <span className="text-sm font-medium text-[#0D1117]">
-                        {item.subcategoryLabel}
-                      </span>
-                      <Badge className="bg-green-600 text-white text-xs">
-                        {item.count}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-        </div>
-        
-        {/* Footer note */}
-        <div className="mt-20 text-center">
-          <p className="text-sm text-[#7A7A7A]">
-            Insights calculated from buyer searches, RFQ submissions, and product views.
-            <br />
-            Data refreshes in real-time as buyers interact with the platform.
-          </p>
+          {/* Footer note */}
+          <div className="mt-20 text-center">
+            <p className="text-sm text-[#7A7A7A]">
+              Insights calculated from buyer searches, RFQ submissions, and product views.
+              <br />
+              Data refreshes in real-time as buyers interact with the platform.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+      <SiteFooter />
+    </>
   )
 }

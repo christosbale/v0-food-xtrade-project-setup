@@ -23,6 +23,8 @@ import {
   recommendFreightMode,
   getContainerSpecs,
 } from '@/lib/utils/container-calculations'
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 interface Product {
   id: string
@@ -111,6 +113,8 @@ export default function LogisticsPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SiteHeader />
+      
       <div className="mx-auto max-w-[1280px] px-6 py-16 md:px-10 md:py-24">
         {/* Header */}
         <div className="mb-16 text-center">
@@ -355,6 +359,8 @@ export default function LogisticsPage() {
           </p>
         </div>
       </div>
+      
+      <SiteFooter />
     </div>
   )
 }

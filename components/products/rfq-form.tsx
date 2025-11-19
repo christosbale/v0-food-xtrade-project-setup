@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 import { createClient } from '@/lib/supabase/client'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 import { findMatchingSuppliers } from '@/lib/utils/rfq-matching'
-import { logRFQDemandEvent } from '@/app/products/actions'
+import { logRFQDemandEvent, sendRFQEmails } from '@/app/products/actions'
 
 interface Product {
   id: string
@@ -181,6 +181,35 @@ export function RFQForm({ product, onSuccess, onCancel, showCancelButton = false
           packaging: formData.targetPackaging || undefined,
           fullRfq: data[0],
         })
+
+        const { data: supplierData } = await supabase
+          .from('companies')
+          .select('user_id')
+          .eq('id', supplierCompanyId)
+          .single()
+
+        if (supplierData) {
+          const { data: supplierProfile } = await supabase
+            .from('user_profiles')
+            .select('email')
+            .eq('id', supplierData.user_id)
+            .single()
+
+          if (supplierProfile?.email) {
+            await sendRFQEmails({
+              rfqId: data[0].id,
+              buyerEmail: formData.businessEmail,
+              buyerCompanyName: formData.companyName,
+              buyerCountry: formData.country,
+              supplierEmail: supplierProfile.email,
+              supplierName: product.supplier.name,
+              productName: product.name,
+              quantity: parseFloat(formData.quantity),
+              unit: product.unit,
+              message: formData.message,
+            })
+          }
+        }
       }
 
       if (formData.targetCategory) {

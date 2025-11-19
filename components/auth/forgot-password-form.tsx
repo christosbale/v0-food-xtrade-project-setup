@@ -30,6 +30,18 @@ export function ForgotPasswordForm() {
 
       if (resetError) throw resetError
 
+      try {
+        await fetch('/api/email/password-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        })
+        console.log('[v0] Password reset email sent')
+      } catch (emailError) {
+        console.error('[v0] Failed to send custom reset email:', emailError)
+        // Supabase already sent their email, so this is just a bonus
+      }
+
       setSuccess(true)
       setEmail('')
     } catch (err: any) {
@@ -44,8 +56,8 @@ export function ForgotPasswordForm() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center text-center space-y-4">
-            <div className="rounded-full bg-[#FFB84D]/10 p-3">
-              <CheckCircle className="h-8 w-8 text-[#FFB84D]" />
+            <div className="rounded-full bg-[#DDE9F8] p-3">
+              <CheckCircle className="h-8 w-8 text-[#0D1117]" />
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold text-lg">Check Your Email</h3>
