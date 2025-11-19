@@ -13,7 +13,7 @@ import Link from "next/link"
 import { createClient } from '@/lib/supabase/server'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
 import { CheckCircle2 } from 'lucide-react'
-import { formatPrice } from '@/lib/utils/currency'
+import { formatPrice, type Currency } from '@/lib/utils/currency'
 
 function getRiskCategory(riskScore: number | null): 'low' | 'medium' | 'high' | 'unknown' {
   if (riskScore === null) return 'unknown'
@@ -84,21 +84,18 @@ export default async function AdminProductsPage({
       company_name: string | null
       verification_status: string | null
       risk_score: number | null
-    } | {
-      company_name: string | null
-      verification_status: string | null
-      risk_score: number | null
-    }[] | null
+    } | null
   }
 
-  let products = (productsRaw as any as SupabaseProduct[]) || []
+  let products = ((productsRaw || []) as SupabaseProduct[]).map(p => ({
+    ...p,
+    companies: Array.isArray(p.companies) ? p.companies[0] : p.companies
+  }))
   
   const getCompanyData = (companies: SupabaseProduct['companies']) => {
-    if (!companies) return null
-    if (Array.isArray(companies)) return companies[0] || null
-    return companies
+    return companies || null
   }
-  
+
   if (params.verification_status && params.verification_status !== 'all') {
     products = products.filter(p => 
       getCompanyData(p.companies)?.verification_status === params.verification_status
@@ -408,7 +405,7 @@ export default async function AdminProductsPage({
                           <TableCell>
                             {product.price_per_unit ? (
                               <span className="font-medium">
-                                {formatPrice(product.price_per_unit, product.currency || 'EUR')}
+                                {formatPrice(product.price_per_unit, (product.currency as Currency) || 'EUR')}
                               </span>
                             ) : '—'}
                           </TableCell>
@@ -496,7 +493,7 @@ export default async function AdminProductsPage({
                             <p className="text-[#7A7A7A] text-xs uppercase tracking-wide mb-0.5">Price</p>
                             {product.price_per_unit ? (
                               <p className="font-medium text-[#0D1117]">
-                                {formatPrice(product.price_per_unit, product.currency || 'EUR')}
+                                {formatPrice(product.price_per_unit, (product.currency as Currency) || 'EUR')}
                               </p>
                             ) : (
                               <span className="text-[#7A7A7A]">—</span>

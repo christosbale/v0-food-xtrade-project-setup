@@ -8,6 +8,7 @@ import { RFQForm } from '@/components/products/rfq-form'
 import { createClient } from '@/lib/supabase/server'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
+import { formatPrice, type Currency } from '@/lib/utils/currency'
 
 async function getProduct(id: string) {
   const supabase = await createClient()
@@ -156,12 +157,29 @@ function getRiskLabel(score: number | null): { label: string; variant: 'risk-low
   return { label: 'High Risk', variant: 'risk-high' }
 }
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id)
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params // Await params for Next.js 16 compatibility
+  const product = await getProduct(resolvedParams.id)
 
   if (!product) {
     notFound()
   }
+
+  type ProductWithCompany = typeof product & {
+    companies: {
+      id: string
+      company_name: string
+      country: string
+      verification_status: string
+      risk_score: number
+      subscription_plan: string
+    } | null
+  }
+
+  const productWithCompany = {
+    ...product,
+    companies: Array.isArray(product.companies) ? product.companies[0] : product.companies
+  } as ProductWithCompany
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -175,22 +193,22 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
       .eq('id', user.id)
       .single()
     
-    isOwner = profile?.company_id === product.company_id
+    isOwner = profile?.company_id === productWithCompany.company_id
   }
 
   const [relatedProducts, relatedRFQs, marketSignals] = await Promise.all([
-    getRelatedProducts(product.category, product.product_type || '', product.id),
-    getRelatedRFQs(product.category, product.product_type, product.origin_country),
-    getMarketSignals(product.product_type)
+    getRelatedProducts(productWithCompany.category, productWithCompany.product_type || '', productWithCompany.id),
+    getRelatedRFQs(productWithCompany.category, productWithCompany.product_type, productWithCompany.origin_country),
+    getMarketSignals(productWithCompany.product_type)
   ])
 
   const supplier = {
-    name: product.companies?.company_name || 'Unknown Supplier',
-    country: product.companies?.country || 'Unknown',
-    verified: product.companies?.verification_status === 'verified',
-    riskScore: product.companies?.risk_score || 0,
-    subscriptionPlan: product.companies?.subscription_plan,
-    id: product.companies?.id
+    name: productWithCompany.companies?.company_name || 'Unknown Supplier',
+    country: productWithCompany.companies?.country || 'Unknown',
+    verified: productWithCompany.companies?.verification_status === 'verified',
+    riskScore: productWithCompany.companies?.risk_score || 0,
+    subscriptionPlan: productWithCompany.companies?.subscription_plan,
+    id: productWithCompany.companies?.id
   }
 
   const riskInfo = getRiskLabel(supplier.riskScore)
@@ -206,25 +224,25 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
               Marketplace
             </Link>
             <ChevronRight className="h-3 w-3" />
-            <span>{product.category}</span>
-            {product.product_type && (
+            <span>{productWithCompany.category}</span>
+            {productWithCompany.product_type && (
               <>
                 <ChevronRight className="h-3 w-3" />
-                <span>{product.product_type}</span>
+                <span>{productWithCompany.product_type}</span>
               </>
             )}
             <ChevronRight className="h-3 w-3" />
-            <span className="text-[#0D1117]">{product.product_name}</span>
+            <span className="text-[#0D1117]">{productWithCompany.product_name}</span>
           </div>
         </div>
 
         <div className="flex items-start justify-between gap-8 mb-6">
           <div className="flex-1">
             <h1 className="text-[32px] font-bold text-[#0D1117] leading-[1.2] tracking-tight mb-3">
-              {product.product_name}
+              {productWithCompany.product_name}
             </h1>
             <p className="text-[16px] text-[#7A7A7A] mb-4">
-              {product.category} · {product.product_type || 'General'}
+              {productWithCompany.category} · {productWithCompany.product_type || 'General'}
             </p>
             
             {isOwner && (
@@ -236,7 +254,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           
           <div className="flex items-center gap-3 shrink-0">
             {isOwner ? (
-              <Link href={`/dashboard/products?editing=${product.id}`}>
+              <Link href={`/dashboard/products?editing=${productWithCompany.id}`}>
                 <Button className="bg-[#0D1117] text-white font-bold hover:bg-[#0D1117]/90 h-auto py-3 px-6">
                   <Edit className="h-4 w-4 mr-2" />
                   Edit product
@@ -259,8 +277,8 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         </div>
 
         <div className="flex items-center gap-3 mb-12">
-          {product.customs_status && (
-            <Badge variant="customs">{product.customs_status}</Badge>
+          {productWithCompany.customs_status && (
+            <Badge variant="customs">{productWithCompany.customs_status}</Badge>
           )}
           {supplier.verified && (
             <Badge variant="verified">✓ Verified Supplier</Badge>
@@ -278,13 +296,13 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             <div className="bg-white border border-[#E2E2E2] rounded-md p-8">
               <h2 className="text-[20px] font-bold text-[#0D1117] mb-4">Product overview</h2>
               <p className="text-[16px] text-[#0D1117] leading-relaxed mb-6">
-                {product.product_name} from {product.origin_country}. High-quality {product.category.toLowerCase()} 
-                suitable for commercial use. {product.product_type && `Product type: ${product.product_type}.`}
+                {productWithCompany.product_name} from {productWithCompany.origin_country}. High-quality {productWithCompany.category.toLowerCase()} 
+                suitable for commercial use. {productWithCompany.product_type && `Product type: ${productWithCompany.product_type}.`}
               </p>
               
-              {product.certifications && product.certifications.length > 0 && (
+              {productWithCompany.certifications && productWithCompany.certifications.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {product.certifications.map((cert: string) => (
+                  {productWithCompany.certifications.map((cert: string) => (
                     <Badge key={cert} variant="outline" className="text-[12px]">
                       {cert}
                     </Badge>
@@ -299,39 +317,41 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
               <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
                 <div>
                   <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Category</div>
-                  <div className="text-[16px] text-[#0D1117] font-medium">{product.category}</div>
+                  <div className="text-[16px] text-[#0D1117] font-medium">{productWithCompany.category}</div>
                 </div>
                 
-                {product.product_type && (
+                {productWithCompany.product_type && (
                   <div>
                     <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Subcategory</div>
-                    <div className="text-[16px] text-[#0D1117] font-medium">{product.product_type}</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">{productWithCompany.product_type}</div>
                   </div>
                 )}
                 
                 <div>
                   <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Origin</div>
-                  <div className="text-[16px] text-[#0D1117] font-medium">{product.origin_country}</div>
+                  <div className="text-[16px] text-[#0D1117] font-medium">{productWithCompany.origin_country}</div>
                 </div>
                 
-                {product.crop_year && (
+                {productWithCompany.crop_year && (
                   <div>
                     <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Crop Year</div>
-                    <div className="text-[16px] text-[#0D1117] font-medium">{product.crop_year}</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">{productWithCompany.crop_year}</div>
                   </div>
                 )}
                 
-                {product.unit && (
+                {productWithCompany.unit && (
                   <div>
                     <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Unit</div>
-                    <div className="text-[16px] text-[#0D1117] font-medium">{product.unit}</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">{productWithCompany.unit}</div>
                   </div>
                 )}
                 
-                {product.shelf_life && (
+                {productWithCompany.shelf_life && (
                   <div>
                     <div className="text-[12px] uppercase text-[#7A7A7A] mb-1">Shelf Life</div>
-                    <div className="text-[16px] text-[#0D1117] font-medium">{product.shelf_life} days</div>
+                    <div className="text-[16px] text-[#0D1117] font-medium">
+                      {productWithCompany.shelf_life} days
+                    </div>
                   </div>
                 )}
               </div>
@@ -341,46 +361,46 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             <div className="bg-white border border-[#E2E2E2] rounded-md p-8">
               <h2 className="text-[20px] font-bold text-[#0D1117] mb-6">Packaging & quantity</h2>
               <div className="space-y-4">
-                {product.min_order_quantity && (
+                {productWithCompany.min_order_quantity && (
                   <div className="flex items-start gap-3">
                     <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
                     <div>
                       <div className="text-[14px] text-[#7A7A7A]">Minimum order</div>
                       <div className="text-[16px] text-[#0D1117] font-medium">
-                        {product.min_order_quantity} {product.min_order_unit || product.unit}
+                        {productWithCompany.min_order_quantity} {productWithCompany.min_order_unit || productWithCompany.unit}
                       </div>
                     </div>
                   </div>
                 )}
                 
-                {product.available_quantity && (
+                {productWithCompany.available_quantity && (
                   <div className="flex items-start gap-3">
                     <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
                     <div>
                       <div className="text-[14px] text-[#7A7A7A]">Available quantity</div>
                       <div className="text-[16px] text-[#0D1117] font-medium">
-                        {product.available_quantity.toLocaleString()} {product.unit}
+                        {productWithCompany.available_quantity.toLocaleString()} {productWithCompany.unit}
                       </div>
                     </div>
                   </div>
                 )}
                 
-                {product.packaging && (
+                {productWithCompany.packaging && (
                   <div className="flex items-start gap-3">
                     <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
                     <div>
                       <div className="text-[14px] text-[#7A7A7A]">Packaging</div>
-                      <div className="text-[16px] text-[#0D1117] font-medium">{product.packaging}</div>
+                      <div className="text-[16px] text-[#0D1117] font-medium">{productWithCompany.packaging}</div>
                     </div>
                   </div>
                 )}
                 
-                {product.pallet_type && (
+                {productWithCompany.pallet_type && (
                   <div className="flex items-start gap-3">
                     <Package className="h-5 w-5 text-[#7A7A7A] mt-0.5" />
                     <div>
                       <div className="text-[14px] text-[#7A7A7A]">Pallet type</div>
-                      <div className="text-[16px] text-[#0D1117] font-medium">{product.pallet_type}</div>
+                      <div className="text-[16px] text-[#0D1117] font-medium">{productWithCompany.pallet_type}</div>
                     </div>
                   </div>
                 )}
@@ -444,25 +464,25 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             <div className="bg-white border border-[#E2E2E2] rounded-md p-6">
               <h3 className="text-[18px] font-bold text-[#0D1117] mb-4">Customs & logistics</h3>
               <div className="space-y-3">
-                {product.customs_status && (
+                {productWithCompany.customs_status && (
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] text-[#7A7A7A]">Customs status</span>
-                    <Badge variant="customs">{product.customs_status}</Badge>
+                    <Badge variant="customs">{productWithCompany.customs_status}</Badge>
                   </div>
                 )}
                 
-                {product.incoterm && (
+                {productWithCompany.incoterm && (
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] text-[#7A7A7A]">Incoterms</span>
-                    <span className="text-[14px] text-[#0D1117] font-medium">{product.incoterm}</span>
+                    <span className="text-[14px] text-[#0D1117] font-medium">{productWithCompany.incoterm}</span>
                   </div>
                 )}
                 
-                {product.warehouse_country && (
+                {productWithCompany.warehouse_country && (
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] text-[#7A7A7A]">Warehouse</span>
                     <span className="text-[14px] text-[#0D1117] font-medium">
-                      {product.warehouse_city ? `${product.warehouse_city}, ` : ''}{product.warehouse_country}
+                      {productWithCompany.warehouse_city ? `${productWithCompany.warehouse_city}, ` : ''}{productWithCompany.warehouse_country}
                     </span>
                   </div>
                 )}
@@ -597,15 +617,15 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
               
               <RFQForm 
                 product={{
-                  id: product.id,
-                  name: product.product_name,
-                  category: product.category,
-                  origin: product.origin_country,
-                  availableQuantity: product.available_quantity,
-                  unit: product.unit,
-                  priceRange: product.price_per_unit ? `${product.currency || 'EUR'} ${product.price_per_unit}` : 'Contact for price',
-                  customsStatus: product.customs_status || 'Not specified',
-                  certifications: product.certifications || [],
+                  id: productWithCompany.id,
+                  name: productWithCompany.product_name,
+                  category: productWithCompany.category,
+                  origin: productWithCompany.origin_country,
+                  availableQuantity: productWithCompany.available_quantity,
+                  unit: productWithCompany.unit,
+                  priceRange: productWithCompany.price_per_unit ? formatPrice(productWithCompany.price_per_unit, ((productWithCompany.currency || 'EUR') as Currency)) : 'Contact for price',
+                  customsStatus: productWithCompany.customs_status || 'Not specified',
+                  certifications: productWithCompany.certifications || [],
                   supplier: supplier
                 }}
               />
@@ -618,35 +638,45 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             <h2 className="text-[24px] font-bold text-[#0D1117] mb-6">Related products</h2>
             
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedProducts.map((relProd) => (
-                <Link 
-                  key={relProd.id}
-                  href={`/products/${relProd.id}`}
-                  className="bg-white border border-[#E2E2E2] rounded-md p-6 hover:border-[#0D1117] transition-colors"
-                >
-                  <h3 className="text-[18px] font-bold text-[#0D1117] mb-2 line-clamp-2">
-                    {relProd.product_name}
-                  </h3>
-                  
-                  <div className="flex items-center gap-2 mb-3 text-[14px] text-[#7A7A7A]">
-                    <MapPin className="h-3 w-3" />
-                    {relProd.origin_country}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-4">
-                    {relProd.customs_status && (
-                      <Badge variant="customs" className="text-[10px]">{relProd.customs_status}</Badge>
-                    )}
-                    {relProd.companies?.verification_status === 'verified' && (
-                      <Badge variant="verified" className="text-[10px]">✓</Badge>
-                    )}
-                  </div>
-                  
-                  <div className="text-[14px] text-[#7A7A7A]">
-                    {relProd.companies?.company_name || 'Unknown Supplier'}
-                  </div>
-                </Link>
-              ))}
+              {relatedProducts.map((relProd) => {
+                type RelatedProductWithCompany = typeof relProd & {
+                  companies: { company_name: string; verification_status: string } | null
+                }
+                const relatedProduct = {
+                  ...relProd,
+                  companies: Array.isArray(relProd.companies) ? relProd.companies[0] : relProd.companies
+                } as RelatedProductWithCompany
+                
+                return (
+                  <Link 
+                    key={relatedProduct.id}
+                    href={`/products/${relatedProduct.id}`}
+                    className="bg-white border border-[#E2E2E2] rounded-md p-6 hover:border-[#0D1117] transition-colors"
+                  >
+                    <h3 className="text-[18px] font-bold text-[#0D1117] mb-2 line-clamp-2">
+                      {relatedProduct.product_name}
+                    </h3>
+                    
+                    <div className="flex items-center gap-2 mb-3 text-[14px] text-[#7A7A7A]">
+                      <MapPin className="h-3 w-3" />
+                      {relatedProduct.origin_country}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-4">
+                      {relatedProduct.customs_status && (
+                        <Badge variant="customs" className="text-[10px]">{relatedProduct.customs_status}</Badge>
+                      )}
+                      {relatedProduct.companies?.verification_status === 'verified' && (
+                        <Badge variant="verified" className="text-[10px]">✓</Badge>
+                      )}
+                    </div>
+                    
+                    <div className="text-[14px] text-[#7A7A7A]">
+                      {relatedProduct.companies?.company_name || 'Unknown Supplier'}
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         )}

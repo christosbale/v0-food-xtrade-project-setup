@@ -41,6 +41,15 @@ export default async function AdminBillingPage() {
   // Calculate revenue (mock calculation for demo)
   const totalRevenue = (proTier.length * 99 + premiumTier.length * 299)
 
+  type SubscriptionWithCompany = {
+    id: string
+    plan_id: string
+    status: string
+    promotional_months: number
+    started_at: string
+    companies: { company_name: string } | { company_name: string }[] | null
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -274,35 +283,43 @@ export default async function AdminBillingPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {subscriptionHistory.slice(0, 10).map((sub: any) => (
-                  <TableRow key={sub.id}>
-                    <TableCell className="font-medium">
-                      {sub.companies?.company_name || 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {sub.plan_id}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={sub.status === 'active' ? 'default' : 'secondary'}>
-                        {sub.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {sub.promotional_months > 0 ? (
-                        <Badge className="bg-green-500">
-                          {sub.promotional_months} months free
+                {subscriptionHistory.slice(0, 10).map((sub) => {
+                  const subscription = sub as SubscriptionWithCompany
+
+                  const companyData = Array.isArray(subscription.companies) 
+                    ? subscription.companies[0] 
+                    : subscription.companies
+
+                  return (
+                    <TableRow key={subscription.id}>
+                      <TableCell className="font-medium">
+                        {companyData?.company_name || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {subscription.plan_id}
                         </Badge>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(sub.started_at).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
+                          {subscription.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {subscription.promotional_months > 0 ? (
+                          <Badge className="bg-green-500">
+                            {subscription.promotional_months} months free
+                          </Badge>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(subscription.started_at).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           ) : (

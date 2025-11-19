@@ -8,6 +8,7 @@ import Link from "next/link"
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { AdminCompanyControls } from '@/components/admin/admin-company-controls'
+import { formatPrice, type Currency } from '@/lib/utils/currency'
 
 function isValidUUID(str: string): boolean {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -15,11 +16,13 @@ function isValidUUID(str: string): boolean {
 }
 
 export default async function AdminCompanyDetailPage({ params }: { params: { id: string } }) {
-  if (params.id === 'pending') {
+  const resolvedParams = await params // Await params for Next.js 16 compatibility
+  
+  if (resolvedParams.id === 'pending') {
     redirect('/admin/companies-pending')
   }
   
-  if (!isValidUUID(params.id)) {
+  if (!isValidUUID(resolvedParams.id)) {
     notFound()
   }
 
@@ -28,7 +31,7 @@ export default async function AdminCompanyDetailPage({ params }: { params: { id:
   const { data: company } = await supabase
     .from('companies')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single()
 
   if (!company) {
@@ -44,18 +47,18 @@ export default async function AdminCompanyDetailPage({ params }: { params: { id:
     supabase
       .from('user_profiles')
       .select('id, email, role, created_at')
-      .eq('company_id', params.id)
+      .eq('company_id', resolvedParams.id)
       .order('created_at', { ascending: false }),
     supabase
       .from('products')
       .select('id, product_name, category, customs_status, price_per_unit, currency, status, created_at')
-      .eq('company_id', params.id)
+      .eq('company_id', resolvedParams.id)
       .order('created_at', { ascending: false })
       .limit(10),
     supabase
       .from('rfqs')
       .select('id, buyer_country, target_category, target_subcategory, status, created_at')
-      .eq('supplier_company_id', params.id)
+      .eq('supplier_company_id', resolvedParams.id)
       .order('created_at', { ascending: false })
       .limit(5)
   ])
@@ -251,7 +254,7 @@ export default async function AdminCompanyDetailPage({ params }: { params: { id:
                       )}
                       {!product.customs_status && ' N/A'} • 
                       {product.price_per_unit && product.currency 
-                        ? ` ${product.price_per_unit} ${product.currency}`
+                        ? formatPrice(product.price_per_unit, ((product.currency || 'EUR') as Currency))
                         : ' Price N/A'
                       }
                     </p>

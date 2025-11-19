@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export default async function UserDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = await params // Await params for Next.js 16 compatibility
   const supabase = await createClient()
   const { data: { user: currentUser } } = await supabase.auth.getUser()
   
@@ -28,17 +29,32 @@ export default async function UserDetailPage({ params }: { params: { id: string 
   // Get user details using admin client
   const adminClient = createAdminClient()
   
-  const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(params.id)
+  const { data: authUser, error: authError } = await adminClient.auth.admin.getUserById(resolvedParams.id)
   
   if (authError || !authUser) {
     notFound()
   }
 
+  type UserProfileWithCompany = {
+    id: string
+    role: string
+    companies: {
+      id: string
+      company_name: string
+      company_type: string
+    } | null
+  }
+
   const { data: userProfile } = await supabase
     .from('user_profiles')
     .select('*, companies(*)')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single()
+
+  const profileWithCompany = userProfile ? {
+    ...userProfile,
+    companies: Array.isArray(userProfile.companies) ? userProfile.companies[0] : userProfile.companies
+  } as UserProfileWithCompany : null
 
   return (
     <div className="container py-8">
@@ -65,7 +81,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Role</p>
-              <p className="text-base">{userProfile?.role || 'user'}</p>
+              <p className="text-base">{profileWithCompany?.role || 'user'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Created At</p>
@@ -82,7 +98,7 @@ export default async function UserDetailPage({ params }: { params: { id: string 
           </CardContent>
         </Card>
 
-        {userProfile?.companies && (
+        {profileWithCompany?.companies && (
           <Card>
             <CardHeader>
               <CardTitle>Company Information</CardTitle>
@@ -90,14 +106,14 @@ export default async function UserDetailPage({ params }: { params: { id: string 
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Company Name</p>
-                <p className="text-base">{userProfile.companies.company_name}</p>
+                <p className="text-base">{profileWithCompany.companies.company_name}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Company Type</p>
-                <p className="text-base">{userProfile.companies.company_type}</p>
+                <p className="text-base">{profileWithCompany.companies.company_type}</p>
               </div>
               <div>
-                <Link href={`/admin/companies/${userProfile.companies.id}`}>
+                <Link href={`/admin/companies/${profileWithCompany.companies.id}`}>
                   <Button variant="outline">View Company Details</Button>
                 </Link>
               </div>
