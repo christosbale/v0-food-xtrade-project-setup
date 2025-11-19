@@ -137,7 +137,7 @@ export async function approveCompany(
 
   revalidatePath('/admin')
   revalidatePath('/admin/companies')
-  revalidatePath('/admin/companies/pending')
+  revalidatePath('/admin/companies-pending')
   revalidatePath(`/admin/companies/${companyId}`)
   
   return { success: true, vatMessage }
@@ -200,7 +200,7 @@ export async function rejectCompany(
 
   revalidatePath('/admin')
   revalidatePath('/admin/companies')
-  revalidatePath('/admin/companies/pending')
+  revalidatePath('/admin/companies-pending')
   revalidatePath(`/admin/companies/${companyId}`)
   
   return { success: true }
@@ -269,4 +269,94 @@ export async function validateCompanyVAT(companyId: string) {
   revalidatePath(`/admin/companies/${companyId}`)
   
   return validation
+}
+
+// New admin actions for updating verification and subscription
+
+export async function updateVerificationSettings(
+  companyId: string,
+  data: {
+    verification_status: string
+    verification_level: string
+    risk_score: number
+    risk_notes: string
+  }
+) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  
+  if (!profile || profile.role !== 'admin') {
+    throw new Error('Unauthorized - Admin access required')
+  }
+
+  const updateData: any = {
+    verification_status: data.verification_status,
+    verification_level: data.verification_level,
+    risk_score: data.risk_score,
+    risk_notes: data.risk_notes,
+    risk_last_updated: new Date().toISOString(),
+  }
+
+  // Set verified_at if changing to verified
+  if (data.verification_status === 'verified') {
+    updateData.verified_at = new Date().toISOString()
+  }
+
+  const { error } = await supabase
+    .from('companies')
+    .update(updateData)
+    .eq('id', companyId)
+
+  if (error) throw error
+
+  revalidatePath(`/admin/companies/${companyId}`)
+  revalidatePath('/admin/companies')
+  
+  return { success: true }
+}
+
+export async function updateSubscriptionSettings(
+  companyId: string,
+  data: {
+    subscription_plan: string
+    subscription_expires_at: string | null
+  }
+) {
+  const supabase = await createClient()
+  
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  
+  if (!profile || profile.role !== 'admin') {
+    throw new Error('Unauthorized - Admin access required')
+  }
+
+  const { error } = await supabase
+    .from('companies')
+    .update({
+      subscription_plan: data.subscription_plan,
+      subscription_expires_at: data.subscription_expires_at,
+    })
+    .eq('id', companyId)
+
+  if (error) throw error
+
+  revalidatePath(`/admin/companies/${companyId}`)
+  revalidatePath('/admin/companies')
+  
+  return { success: true }
 }

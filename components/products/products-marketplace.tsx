@@ -482,7 +482,9 @@ export function ProductsMarketplace({ products }: ProductsMarketplaceProps) {
 
                         <div className="space-y-2">
                           {product.customs_status && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge 
+                              variant="customs"
+                            >
                               {getCustomsBadgeLabel(product.customs_status)}
                             </Badge>
                           )}

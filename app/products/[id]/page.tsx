@@ -204,9 +204,8 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="secondary" className="shrink-0 cursor-help bg-[#FFB84D]/10 text-[#FFB84D] border-[#FFB84D]/30">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          Verified
+                        <Badge variant="verified" className="shrink-0 cursor-help">
+                          ✓ Verified
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
@@ -292,7 +291,12 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                 <FileCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm text-muted-foreground">Customs Status</p>
-                  <p className="font-medium">{product.customs_status || 'Not specified'}</p>
+                  <p className="font-medium">
+                    {product.customs_status && (
+                      <Badge variant="customs">{product.customs_status}</Badge>
+                    )}
+                    {!product.customs_status && 'Not specified'}
+                  </p>
                 </div>
               </div>
             </div>

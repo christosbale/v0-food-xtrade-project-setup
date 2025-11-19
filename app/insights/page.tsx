@@ -270,52 +270,55 @@ export default async function InsightsPage({
   
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-[1280px] px-6 py-16 md:px-10 md:py-24">
+      <div className="container-boxed py-24">
         {/* Header */}
-        <div className="mb-16 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="h-8 w-8 text-[#FFB84D]" />
-            <h1 className="text-display-large font-bold text-black">
+        <div className="mb-20">
+          <div className="flex items-center gap-3 mb-6">
+            <Sparkles className="h-10 w-10 text-[#FFD036]" />
+            <h1 className="text-display-medium font-bold text-[#0D1117]">
               Market Insights
             </h1>
           </div>
-          <p className="text-title-large text-black/60 max-w-2xl mx-auto mb-8">
-            Real-time buyer demand trends across categories, origins and countries.
+          <p className="text-body-large text-[#7A7A7A] max-w-3xl mb-12">
+            Real-time buyer demand intelligence across categories, origins and destination markets.
           </p>
           
-          {/* Time range filter */}
-          <div className="flex items-center justify-center gap-4">
-            <span className="text-body-large text-black/60">Time period:</span>
+          {/* Time range filter - minimal button design */}
+          <div className="flex items-center gap-3">
+            <span className="text-body-medium text-[#7A7A7A]">Time period:</span>
             <div className="flex gap-2">
               <Link
                 href="/insights?range=7"
-                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                className={`px-5 py-2 text-sm font-bold transition-all ${
                   timeRange === 7
-                    ? 'border-[#FFB84D] bg-[#FFB84D] text-black font-bold'
-                    : 'border-border hover:border-[#FFB84D]'
+                    ? 'bg-[#0D1117] text-white'
+                    : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
                 }`}
+                style={{ borderRadius: '6px' }}
               >
-                Last 7 days
+                7 Days
               </Link>
               <Link
                 href="/insights?range=30"
-                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                className={`px-5 py-2 text-sm font-bold transition-all ${
                   timeRange === 30
-                    ? 'border-[#FFB84D] bg-[#FFB84D] text-black font-bold'
-                    : 'border-border hover:border-[#FFB84D]'
+                    ? 'bg-[#0D1117] text-white'
+                    : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
                 }`}
+                style={{ borderRadius: '6px' }}
               >
-                Last 30 days
+                30 Days
               </Link>
               <Link
                 href="/insights?range=90"
-                className={`px-4 py-2 rounded-lg border-2 transition-colors ${
+                className={`px-5 py-2 text-sm font-bold transition-all ${
                   timeRange === 90
-                    ? 'border-[#FFB84D] bg-[#FFB84D] text-black font-bold'
-                    : 'border-border hover:border-[#FFB84D]'
+                    ? 'bg-[#0D1117] text-white'
+                    : 'bg-white text-[#0D1117] border border-[#E2E2E2] hover:border-[#0D1117]'
                 }`}
+                style={{ borderRadius: '6px' }}
               >
-                Last 90 days
+                90 Days
               </Link>
             </div>
           </div>
@@ -324,42 +327,43 @@ export default async function InsightsPage({
         {/* AI Market Summary section */}
         <AIMarketSummary timeRange={timeRange} />
         
-        <div className="space-y-16">
-          {/* 1. Top demanded commodities */}
+        <div className="space-y-20">
+          {/* 1. Top demanded commodities - white background */}
           {insights && (
-            <Card className="border-2 border-border">
-              <CardHeader>
-                <CardTitle className="text-headline-large font-bold text-black">
-                  Top Demanded Commodities
-                </CardTitle>
-                <p className="text-body-large text-muted-foreground">
-                  Most searched, requested and viewed products
-                </p>
-              </CardHeader>
-              <CardContent>
+            <section className="bg-white">
+              <div className="border border-[#E2E2E2] p-8">
+                <div className="mb-8">
+                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                    Top Demanded Commodities
+                  </h2>
+                  <p className="text-body-medium text-[#7A7A7A]">
+                    Most searched, requested and viewed products
+                  </p>
+                </div>
+                
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b-2 border-border">
-                        <th className="text-left py-4 px-4 text-title-medium font-bold text-black">
+                      <tr className="border-b border-[#E2E2E2]">
+                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           Rank
                         </th>
-                        <th className="text-left py-4 px-4 text-title-medium font-bold text-black">
+                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           Category
                         </th>
-                        <th className="text-left py-4 px-4 text-title-medium font-bold text-black">
+                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           Subcategory
                         </th>
-                        <th className="text-right py-4 px-4 text-title-medium font-bold text-black">
-                          Total Events
+                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
+                          Total
                         </th>
-                        <th className="text-right py-4 px-4 text-title-medium font-bold text-black">
+                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           Searches
                         </th>
-                        <th className="text-right py-4 px-4 text-title-medium font-bold text-black">
+                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           RFQs
                         </th>
-                        <th className="text-right py-4 px-4 text-title-medium font-bold text-black">
+                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           Views
                         </th>
                       </tr>
@@ -368,36 +372,29 @@ export default async function InsightsPage({
                       {insights.topCommodities.map((item, index) => (
                         <tr
                           key={`${item.category}:${item.subcategory}`}
-                          className="border-b border-border hover:bg-muted/50 transition-colors"
+                          className="border-b border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors"
                         >
-                          <td className="py-4 px-4">
-                            <Badge
-                              variant={index < 3 ? 'default' : 'outline'}
-                              className={
-                                index < 3
-                                  ? 'bg-[#FFB84D] text-black font-bold'
-                                  : ''
-                              }
-                            >
-                              #{index + 1}
-                            </Badge>
+                          <td className="py-4 px-3">
+                            <span className="text-sm font-bold text-[#0D1117]">
+                              {index + 1}
+                            </span>
                           </td>
-                          <td className="py-4 px-4 text-body-large text-black/70">
+                          <td className="py-4 px-3 text-sm text-[#7A7A7A]">
                             {item.categoryLabel}
                           </td>
-                          <td className="py-4 px-4 text-body-large font-medium text-black">
+                          <td className="py-4 px-3 text-sm font-medium text-[#0D1117]">
                             {item.subcategoryLabel}
                           </td>
-                          <td className="py-4 px-4 text-right text-title-large font-bold text-black">
+                          <td className="py-4 px-3 text-right text-base font-bold text-[#0D1117]">
                             {item.totalEvents}
                           </td>
-                          <td className="py-4 px-4 text-right text-body-large text-black/70">
+                          <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
                             {item.searches}
                           </td>
-                          <td className="py-4 px-4 text-right text-body-large text-black/70">
+                          <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
                             {item.rfqs}
                           </td>
-                          <td className="py-4 px-4 text-right text-body-large text-black/70">
+                          <td className="py-4 px-3 text-right text-sm text-[#7A7A7A]">
                             {item.views}
                           </td>
                         </tr>
@@ -405,73 +402,77 @@ export default async function InsightsPage({
                     </tbody>
                   </table>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           )}
           
-          {/* 2. Rising demand (momentum) */}
+          {/* 2. Rising demand (momentum) - SoftGrey background */}
           {insights && (
-            <Card className="border-2 border-border">
-              <CardHeader>
-                <CardTitle className="text-headline-large font-bold text-black flex items-center gap-2">
-                  <TrendingUp className="h-8 w-8 text-green-600" />
-                  Trending Up
-                </CardTitle>
-                <p className="text-body-large text-muted-foreground">
-                  Commodities with the highest demand growth
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
+            <section className="bg-[#F6F6F6] -mx-8 px-8 py-12">
+              <div className="container-boxed">
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-3">
+                    <TrendingUp className="h-8 w-8 text-green-600" />
+                    <h2 className="text-headline-medium font-bold text-[#0D1117]">
+                      Trending Up
+                    </h2>
+                  </div>
+                  <p className="text-body-medium text-[#7A7A7A]">
+                    Commodities with the highest demand growth
+                  </p>
+                </div>
+                
+                <div className="grid gap-3">
                   {insights.risingDemand.map((item) => (
                     <div
                       key={item.subcategory}
-                      className="flex items-center justify-between p-6 border-2 border-border rounded-lg hover:border-[#FFB84D] transition-colors"
+                      className="flex items-center justify-between p-6 bg-white border border-[#E2E2E2] hover:border-[#0D1117] transition-colors"
                     >
                       <div>
-                        <h3 className="text-title-large font-bold text-black mb-1">
+                        <h3 className="text-base font-bold text-[#0D1117] mb-1">
                           {item.subcategoryLabel}
                         </h3>
-                        <p className="text-body-medium text-muted-foreground">
+                        <p className="text-sm text-[#7A7A7A]">
                           {item.currentEvents} events (vs {item.previousEvents} previous period)
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <TrendingUp className="h-5 w-5 text-green-600" />
-                        <span className="text-headline-medium font-bold text-green-600">
+                        <span className="text-xl font-bold text-green-600">
                           +{item.percentChange.toFixed(0)}%
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           )}
           
-          {/* 3. Demand by destination country */}
+          {/* 3. Demand by destination country - white background */}
           {insights && (
-            <Card className="border-2 border-border">
-              <CardHeader>
-                <CardTitle className="text-headline-large font-bold text-black">
-                  Demand by Destination Country
-                </CardTitle>
-                <p className="text-body-large text-muted-foreground">
-                  Where buyers are located and what they're requesting
-                </p>
-              </CardHeader>
-              <CardContent>
+            <section className="bg-white">
+              <div className="border border-[#E2E2E2] p-8">
+                <div className="mb-8">
+                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                    Demand by Destination Country
+                  </h2>
+                  <p className="text-body-medium text-[#7A7A7A]">
+                    Where buyers are located and what they're requesting
+                  </p>
+                </div>
+                
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b-2 border-border">
-                        <th className="text-left py-4 px-4 text-title-medium font-bold text-black">
+                      <tr className="border-b border-[#E2E2E2]">
+                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           Country
                         </th>
-                        <th className="text-right py-4 px-4 text-title-medium font-bold text-black">
+                        <th className="text-right py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           RFQs
                         </th>
-                        <th className="text-left py-4 px-4 text-title-medium font-bold text-black">
+                        <th className="text-left py-4 px-3 text-sm font-bold text-[#0D1117] uppercase tracking-wide">
                           Top Requested Commodities
                         </th>
                       </tr>
@@ -480,15 +481,15 @@ export default async function InsightsPage({
                       {insights.countryDemand.map((item) => (
                         <tr
                           key={item.country}
-                          className="border-b border-border hover:bg-muted/50 transition-colors"
+                          className="border-b border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors"
                         >
-                          <td className="py-4 px-4 text-body-large font-medium text-black">
+                          <td className="py-4 px-3 text-sm font-medium text-[#0D1117]">
                             {item.country}
                           </td>
-                          <td className="py-4 px-4 text-right text-title-large font-bold text-black">
+                          <td className="py-4 px-3 text-right text-base font-bold text-[#0D1117]">
                             {item.rfqCount}
                           </td>
-                          <td className="py-4 px-4 text-body-large text-black/70">
+                          <td className="py-4 px-3 text-sm text-[#7A7A7A]">
                             {item.topSubcategories.join(', ') || 'N/A'}
                           </td>
                         </tr>
@@ -496,51 +497,52 @@ export default async function InsightsPage({
                     </tbody>
                   </table>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           )}
           
-          {/* 4. Origin preference insights */}
+          {/* 4. Origin preference insights - SoftGrey background */}
           {insights && (
-            <Card className="border-2 border-border">
-              <CardHeader>
-                <CardTitle className="text-headline-large font-bold text-black">
-                  Origin Preference Insights
-                </CardTitle>
-                <p className="text-body-large text-muted-foreground">
-                  Which origins buyers prefer for each commodity
-                </p>
-              </CardHeader>
-              <CardContent>
+            <section className="bg-[#F6F6F6] -mx-8 px-8 py-12">
+              <div className="container-boxed">
+                <div className="mb-8">
+                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                    Origin Preference Insights
+                  </h2>
+                  <p className="text-body-medium text-[#7A7A7A]">
+                    Which origins buyers prefer for each commodity
+                  </p>
+                </div>
+                
                 <div className="space-y-8">
                   {insights.originPreferences.map((item) => (
-                    <div key={item.subcategory} className="space-y-4">
-                      <h3 className="text-title-large font-bold text-black">
+                    <div key={item.subcategory} className="bg-white border border-[#E2E2E2] p-6">
+                      <h3 className="text-base font-bold text-[#0D1117] mb-6">
                         {item.subcategoryLabel}
                       </h3>
                       <div className="grid gap-3">
                         {item.origins.map((origin) => (
                           <div
                             key={origin.country}
-                            className="flex items-center justify-between p-4 border border-border rounded-lg"
+                            className="flex items-center gap-6"
                           >
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <span className="text-body-large font-medium text-black">
+                                <span className="text-sm font-medium text-[#0D1117] min-w-[120px]">
                                   {origin.country}
                                 </span>
-                                <Badge variant="outline">
-                                  {origin.count} events
+                                <Badge variant="outline" className="text-xs">
+                                  {origin.count}
                                 </Badge>
                               </div>
-                              <div className="w-full bg-muted rounded-full h-2">
+                              <div className="w-full bg-[#E2E2E2] h-1.5">
                                 <div
-                                  className="bg-[#FFB84D] h-2 rounded-full transition-all"
+                                  className="bg-[#0D1117] h-1.5 transition-all"
                                   style={{ width: `${origin.percentage}%` }}
                                 />
                               </div>
                             </div>
-                            <span className="text-title-large font-bold text-black ml-4">
+                            <span className="text-base font-bold text-[#0D1117] min-w-[60px] text-right">
                               {origin.percentage.toFixed(0)}%
                             </span>
                           </div>
@@ -549,46 +551,47 @@ export default async function InsightsPage({
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           )}
           
-          {/* 5. Fresh produce specific insight */}
+          {/* 5. Fresh produce specific insight - white background */}
           {insights && insights.freshDemand.length > 0 && (
-            <Card className="border-2 border-border bg-gradient-to-br from-white to-green-50">
-              <CardHeader>
-                <CardTitle className="text-headline-large font-bold text-black">
-                  Fresh Produce Trends
-                </CardTitle>
-                <p className="text-body-large text-muted-foreground">
-                  Most demanded fresh produce items
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <section className="bg-white">
+              <div className="border border-[#E2E2E2] p-8">
+                <div className="mb-8">
+                  <h2 className="text-headline-medium font-bold text-[#0D1117] mb-3">
+                    Fresh Produce Trends
+                  </h2>
+                  <p className="text-body-medium text-[#7A7A7A]">
+                    Most demanded fresh produce items
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {insights.freshDemand.map((item) => (
                     <div
                       key={item.subcategory}
-                      className="flex items-center justify-between p-6 bg-white border-2 border-border rounded-lg hover:border-green-500 transition-colors"
+                      className="flex items-center justify-between p-5 bg-[#F6F6F6] border border-[#E2E2E2] hover:border-[#0D1117] transition-colors"
                     >
-                      <span className="text-title-large font-medium text-black">
+                      <span className="text-sm font-medium text-[#0D1117]">
                         {item.subcategoryLabel}
                       </span>
-                      <Badge className="bg-green-600 text-white">
-                        {item.count} events
+                      <Badge className="bg-green-600 text-white text-xs">
+                        {item.count}
                       </Badge>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           )}
         </div>
         
         {/* Footer note */}
-        <div className="mt-16 text-center">
-          <p className="text-body-medium text-muted-foreground">
-            Insights are calculated from buyer searches, RFQ submissions, and product views.
+        <div className="mt-20 text-center">
+          <p className="text-sm text-[#7A7A7A]">
+            Insights calculated from buyer searches, RFQ submissions, and product views.
             <br />
             Data refreshes in real-time as buyers interact with the platform.
           </p>

@@ -9,149 +9,135 @@ import {
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-white backdrop-blur">
-      <div className="mx-auto max-w-[1280px] flex h-18 items-center justify-between px-6 md:px-10">
-        <div className="flex items-center gap-16">
-          <Link href="/" className="flex items-center">
-            <span className="text-2xl md:text-3xl font-bold tracking-tight text-black">
-              food<span className="text-[#FFB84D]">X</span>trade
-            </span>
+    <header className="sticky top-0 z-50 w-full bg-white border-b border-[#E2E2E2]">
+      <div className="container-boxed flex h-16 items-center justify-between">
+        <Link href="/" className="flex items-center">
+          <span className="text-xl font-bold tracking-tight text-[#0D1117]">
+            food<span className="text-[#FFD036]">X</span>trade
+          </span>
+        </Link>
+        
+        <nav className="hidden items-center gap-7 lg:flex">
+          <Link
+            href="/products"
+            className="text-[14px] font-medium text-[#0D1117] tracking-[-0.2px] leading-none transition-colors hover:text-[#0D1117]/70 relative after:absolute after:bottom-[-4px] after:left-0 after:h-[1px] after:w-0 after:bg-[#0D1117] after:transition-all hover:after:w-full"
+          >
+            Products
           </Link>
-          
-          <nav className="hidden items-center gap-8 md:flex">
-            <Link
-              href="/products"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              Products
-            </Link>
-            <Link
-              href="/price-index"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              Price Index
-            </Link>
-            <Link
-              href="/insights"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              Insights
-            </Link>
-            <Link
-              href="/logistics"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              Logistics
-            </Link>
-            <Link
-              href="/buyers"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              For Buyers
-            </Link>
-            <Link
-              href="/suppliers"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              For Suppliers
-            </Link>
-            <Link
-              href="/how-it-works"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              How It Works
-            </Link>
-            <Link
-              href="/pricing"
-              className="text-body-large font-medium text-black/70 transition-colors hover:text-black relative after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:bg-[#FFB84D] after:transition-all hover:after:w-full"
-            >
-              Pricing
-            </Link>
-          </nav>
-        </div>
+          <Link
+            href="/price-index"
+            className="text-[14px] font-medium text-[#0D1117] tracking-[-0.2px] leading-none transition-colors hover:text-[#0D1117]/70 relative after:absolute after:bottom-[-4px] after:left-0 after:h-[1px] after:w-0 after:bg-[#0D1117] after:transition-all hover:after:w-full"
+          >
+            Price Index
+          </Link>
+          <Link
+            href="/insights"
+            className="text-[14px] font-medium text-[#0D1117] tracking-[-0.2px] leading-none transition-colors hover:text-[#0D1117]/70 relative after:absolute after:bottom-[-4px] after:left-0 after:h-[1px] after:w-0 after:bg-[#0D1117] after:transition-all hover:after:w-full"
+          >
+            Insights
+          </Link>
+          <Link
+            href="/logistics"
+            className="text-[14px] font-medium text-[#0D1117] tracking-[-0.2px] leading-none transition-colors hover:text-[#0D1117]/70 relative after:absolute after:bottom-[-4px] after:left-0 after:h-[1px] after:w-0 after:bg-[#0D1117] after:transition-all hover:after:w-full"
+          >
+            Logistics
+          </Link>
+          <Link
+            href="/buyers"
+            className="text-[14px] font-medium text-[#0D1117] tracking-[-0.2px] leading-none transition-colors hover:text-[#0D1117]/70 relative after:absolute after:bottom-[-4px] after:left-0 after:h-[1px] after:w-0 after:bg-[#0D1117] after:transition-all hover:after:w-full"
+          >
+            For Buyers
+          </Link>
+          <Link
+            href="/suppliers"
+            className="text-[14px] font-medium text-[#0D1117] tracking-[-0.2px] leading-none transition-colors hover:text-[#0D1117]/70 relative after:absolute after:bottom-[-4px] after:left-0 after:h-[1px] after:w-0 after:bg-[#0D1117] after:transition-all hover:after:w-full"
+          >
+            For Suppliers
+          </Link>
+          <Link
+            href="/pricing"
+            className="text-[14px] font-medium text-[#0D1117] tracking-[-0.2px] leading-none transition-colors hover:text-[#0D1117]/70 relative after:absolute after:bottom-[-4px] after:left-0 after:h-[1px] after:w-0 after:bg-[#0D1117] after:transition-all hover:after:w-full"
+          >
+            Pricing
+          </Link>
+        </nav>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden items-center gap-4 md:flex">
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-3 lg:flex">
             <Link href="/login">
               <Button 
                 variant="ghost" 
-                className="text-title-medium font-medium text-black hover:bg-muted"
+                className="text-[14px] font-medium text-[#0D1117] hover:bg-[#F6F6F6] h-auto py-2 px-4"
               >
                 Log In
               </Button>
             </Link>
             <Link href="/register">
-              <Button className="bg-[#FFB84D] text-black font-medium hover:bg-[#FFB84D]/90 text-title-medium h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all">
+              <Button className="bg-[#0D1117] text-white font-medium hover:bg-[#0D1117]/90 text-[14px] h-auto py-2 px-[18px] rounded-md">
                 Get Started
               </Button>
             </Link>
           </div>
 
           <Sheet>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-                <Menu className="h-5 w-5" />
+            <SheetTrigger asChild className="lg:hidden">
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-4 w-4 text-[#0D1117]" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] bg-primary border-primary-foreground/10">
-              <nav className="flex flex-col gap-4">
+            <SheetContent side="right" className="w-[280px] bg-white border-[#E2E2E2]">
+              <nav className="flex flex-col gap-4 mt-8">
                 <Link
                   href="/products"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
                 >
                   Products
                 </Link>
                 <Link
                   href="/price-index"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
                 >
                   Price Index
                 </Link>
                 <Link
                   href="/insights"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
                 >
                   Insights
                 </Link>
                 <Link
                   href="/logistics"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
                 >
                   Logistics
                 </Link>
                 <Link
                   href="/buyers"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
                 >
                   For Buyers
                 </Link>
                 <Link
                   href="/suppliers"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
                 >
                   For Suppliers
                 </Link>
                 <Link
-                  href="/how-it-works"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
-                >
-                  How It Works
-                </Link>
-                <Link
                   href="/pricing"
-                  className="text-sm font-medium text-primary-foreground/70 transition-colors hover:text-accent"
+                  className="text-[14px] font-medium text-[#0D1117] py-2 transition-colors hover:text-[#0D1117]/70"
                 >
                   Pricing
                 </Link>
-                <div className="mt-4 flex flex-col gap-3 border-t border-primary-foreground/10 pt-4">
+                <div className="mt-4 flex flex-col gap-3 border-t border-[#E2E2E2] pt-4">
                   <Link href="/login">
-                    <Button variant="ghost" className="w-full justify-start text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground">
+                    <Button variant="ghost" className="w-full justify-start text-[14px] text-[#0D1117] hover:bg-[#F6F6F6]">
                       Log In
                     </Button>
                   </Link>
                   <Link href="/register">
-                    <Button className="w-full bg-accent text-accent-foreground font-semibold hover:bg-accent/90">
+                    <Button className="w-full bg-[#0D1117] text-white font-medium hover:bg-[#0D1117]/90 text-[14px]">
                       Get Started
                     </Button>
                   </Link>

@@ -1,6 +1,5 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -39,40 +38,39 @@ export function AIMarketSummary({ timeRange }: AIMarketSummaryProps) {
   }, [timeRange])
 
   return (
-    <Card className="mb-16 border-2 border-[#FFB84D] bg-gradient-to-br from-white to-yellow-50">
-      <CardHeader>
-        <CardTitle className="text-headline-large font-bold text-black flex items-center gap-2">
-          <Sparkles className="h-8 w-8 text-[#FFB84D]" />
+    <div className="mb-20 border border-[#E2E2E2] bg-[#DDE9F8] p-8">
+      <div className="flex items-center gap-3 mb-4">
+        <Sparkles className="h-8 w-8 text-[#0D1117]" />
+        <h2 className="text-headline-medium font-bold text-[#0D1117]">
           AI Market Summary
-        </CardTitle>
-        <p className="text-body-large text-muted-foreground">
-          AI-generated intelligence report based on current buyer demand patterns
-        </p>
-      </CardHeader>
-      <CardContent>
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-[#FFB84D]" />
-            <span className="ml-3 text-body-large text-muted-foreground">
-              Analyzing market data...
-            </span>
+        </h2>
+      </div>
+      <p className="text-body-medium text-[#7A7A7A] mb-8">
+        AI-generated intelligence report based on current buyer demand patterns
+      </p>
+      
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-[#0D1117]" />
+          <span className="ml-3 text-body-medium text-[#7A7A7A]">
+            Analyzing market data...
+          </span>
+        </div>
+      )}
+      
+      {error && (
+        <div className="p-6 bg-white border border-red-200">
+          <p className="text-body-medium text-red-800">{error}</p>
+        </div>
+      )}
+      
+      {summary && !loading && (
+        <div className="bg-white border border-[#E2E2E2] p-8">
+          <div className="text-body-medium text-[#0D1117] whitespace-pre-line leading-relaxed">
+            {summary}
           </div>
-        )}
-        
-        {error && (
-          <div className="p-6 bg-red-50 border-2 border-red-200 rounded-lg">
-            <p className="text-body-large text-red-800">{error}</p>
-          </div>
-        )}
-        
-        {summary && !loading && (
-          <div className="prose prose-lg max-w-none">
-            <div className="text-body-large text-black/80 whitespace-pre-line leading-relaxed">
-              {summary}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   )
 }

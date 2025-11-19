@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, Building2, Users, Package, CreditCard, ArrowLeft, Clock } from 'lucide-react'
+import { LayoutDashboard, Building2, Users, Package, CreditCard, ArrowLeft, Clock, FileText, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const adminNavItems = [
@@ -19,7 +19,7 @@ const adminNavItems = [
   },
   {
     title: 'Supplier Verification',
-    href: '/admin/companies/pending',
+    href: '/admin/companies-pending',
     icon: Clock,
   },
   {
@@ -33,9 +33,19 @@ const adminNavItems = [
     icon: Package,
   },
   {
+    title: 'RFQs',
+    href: '/admin/rfqs',
+    icon: FileText,
+  },
+  {
     title: 'Billing',
     href: '/admin/billing',
     icon: CreditCard,
+  },
+  {
+    title: 'Market Insights',
+    href: '/insights',
+    icon: TrendingUp,
   },
 ]
 

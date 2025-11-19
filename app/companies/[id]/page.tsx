@@ -272,7 +272,7 @@ export default async function CompanyPage({ params, searchParams }: CompanyPageP
                       </div>
 
                       <div className="space-y-2">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="customs" className="text-xs bg-[#9FE870]/10 text-[#9FE870] border-[#9FE870]/30">
                           {product.customs_status}
                         </Badge>
                         {product.certifications && product.certifications.length > 0 && (

@@ -3,16 +3,27 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { CheckCircle2, XCircle, ExternalLink, FileText, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react'
+import { ExternalLink, FileText, ArrowLeft, Users, Package } from 'lucide-react'
 import Link from "next/link"
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
-import { CompanyApprovalActions } from '@/components/admin/company-approval-actions'
+import { notFound, redirect } from 'next/navigation'
+import { AdminCompanyControls } from '@/components/admin/admin-company-controls'
 
-export default async function CompanyReviewPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient()
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return uuidRegex.test(str)
+}
+
+export default async function AdminCompanyDetailPage({ params }: { params: { id: string } }) {
+  if (params.id === 'pending') {
+    redirect('/admin/companies-pending')
+  }
   
-  console.log('[v0] Loading company review for ID:', params.id)
+  if (!isValidUUID(params.id)) {
+    notFound()
+  }
+
+  const supabase = await createClient()
   
   const { data: company } = await supabase
     .from('companies')
@@ -21,197 +32,205 @@ export default async function CompanyReviewPage({ params }: { params: { id: stri
     .single()
 
   if (!company) {
-    console.log('[v0] Company not found:', params.id)
     notFound()
   }
 
-  console.log('[v0] Company loaded:', company.company_name, 'Status:', company.verification_status)
+  // Fetch related data in parallel
+  const [
+    { data: users },
+    { data: products },
+    { data: rfqs }
+  ] = await Promise.all([
+    supabase
+      .from('user_profiles')
+      .select('id, email, role, created_at')
+      .eq('company_id', params.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('products')
+      .select('id, product_name, category, customs_status, price_per_unit, currency, status, created_at')
+      .eq('company_id', params.id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('rfqs')
+      .select('id, buyer_country, target_category, target_subcategory, status, created_at')
+      .eq('supplier_company_id', params.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
+  ])
 
-  // Fetch documents for this company
-  const { data: documents } = await supabase
-    .from('documents')
-    .select('*')
-    .eq('company_id', params.id)
-    .order('uploaded_at', { ascending: false })
+  // Parse verification documents if exists
+  let documents: any[] = []
+  if (company.verification_documents) {
+    try {
+      documents = Array.isArray(company.verification_documents) 
+        ? company.verification_documents 
+        : []
+    } catch (e) {
+      console.error('Failed to parse verification documents')
+    }
+  }
 
-  const { data: products } = await supabase
-    .from('products')
-    .select('id, product_name, status, created_at')
-    .eq('company_id', params.id)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  // Format subscription expiry
+  const subscriptionActive = company.subscription_expires_at 
+    ? new Date(company.subscription_expires_at) > new Date()
+    : true // null means active
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Company Review</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Company Details</h2>
           <p className="text-muted-foreground">
-            Review and verify supplier application
+            Manage verification, subscription, and company information
           </p>
         </div>
         <Button variant="outline" asChild>
-          <Link href="/admin/companies/pending">
+          <Link href="/admin/companies">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to List
+            Back to Companies
           </Link>
         </Button>
       </div>
 
-      {/* Status Badge */}
-      <div className="flex items-center gap-2">
-        <Badge 
-          variant={
-            company.verification_status === 'verified' ? 'default' :
-            company.verification_status === 'rejected' ? 'destructive' :
-            'secondary'
-          }
-          className="text-sm"
-        >
-          Status: {company.verification_status}
-        </Badge>
-        {company.vat_validated && (
-          <Badge className="bg-green-500 hover:bg-green-600 text-sm">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            VAT Validated
-          </Badge>
-        )}
-        {company.tax_id && !company.vat_validated && (
-          <Badge variant="outline" className="text-sm">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            VAT Not Validated
-          </Badge>
-        )}
-      </div>
-
-      {/* Company Information */}
-      <Card>
+      {/* Company Header Card */}
+      <Card className="bg-white">
         <CardHeader>
-          <CardTitle>Company Information</CardTitle>
-          <CardDescription>Basic details about the supplier</CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-2xl">{company.company_name || company.name}</CardTitle>
+              <CardDescription className="mt-2 text-base">
+                {company.city}, {company.country}
+              </CardDescription>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <Badge 
+                variant={
+                  company.verification_status === 'verified' ? 'verified' :
+                  company.verification_status === 'rejected' ? 'destructive' :
+                  'secondary'
+                }
+                className="text-sm"
+              >
+                {company.verification_status === 'verified' && '✓ '}
+                {company.verification_status}
+              </Badge>
+              {company.subscription_plan && (
+                <Badge 
+                  variant="outline"
+                  className="text-sm capitalize"
+                  style={{ 
+                    backgroundColor: subscriptionActive ? '#FFB84D' : '#666',
+                    color: subscriptionActive ? '#000' : '#fff',
+                    borderColor: 'transparent'
+                  }}
+                >
+                  {company.subscription_plan}
+                </Badge>
+              )}
+              {company.risk_score !== null && (
+                <Badge 
+                  variant={
+                    company.risk_score >= 70 ? 'risk-low' :
+                    company.risk_score >= 40 ? 'risk-medium' :
+                    'risk-high'
+                  }
+                  className="text-sm"
+                >
+                  Risk: {company.risk_score}
+                </Badge>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label className="text-muted-foreground">Company Name</Label>
-              <p className="text-lg font-medium">{company.company_name}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Country</Label>
-              <p className="text-lg font-medium">{company.country}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">VAT/Tax ID</Label>
-              <p className="text-lg font-medium">{company.tax_id || 'Not provided'}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Business Registration</Label>
-              <p className="text-lg font-medium">{company.business_registration_number || 'Not provided'}</p>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label className="text-muted-foreground">Email</Label>
-              <a 
-                href={`mailto:${company.business_email}`}
-                className="font-medium text-primary hover:underline inline-flex items-center gap-1"
-              >
-                {company.business_email}
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Phone</Label>
-              {company.phone ? (
-                <a 
-                  href={`tel:${company.phone}`}
-                  className="font-medium text-primary hover:underline"
-                >
-                  {company.phone}
-                </a>
-              ) : (
-                <p className="font-medium">Not provided</p>
-              )}
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Website</Label>
-              {company.website ? (
+            {company.website_url && (
+              <div>
+                <Label className="text-muted-foreground">Website</Label>
                 <a
-                  href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
+                  href={company.website_url.startsWith('http') ? company.website_url : `https://${company.website_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-medium text-primary hover:underline inline-flex items-center gap-1"
                 >
-                  {company.website}
+                  {company.website_url}
                   <ExternalLink className="h-3 w-3" />
                 </a>
-              ) : (
-                <p className="font-medium">Not provided</p>
-              )}
-            </div>
+              </div>
+            )}
+            {company.verified_at && (
+              <div>
+                <Label className="text-muted-foreground">Verified Date</Label>
+                <p className="font-medium">
+                  {new Date(company.verified_at).toLocaleDateString()}
+                </p>
+              </div>
+            )}
           </div>
-
-          <Separator />
-
-          <div>
-            <Label className="text-muted-foreground">Address</Label>
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${company.address}, ${company.city}, ${company.postal_code}, ${company.country}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline inline-flex items-center gap-1"
-            >
-              {company.address}, {company.city}, {company.postal_code}, {company.country}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </div>
-
-          <div>
-            <Label className="text-muted-foreground">Company Type</Label>
-            <Badge variant="outline" className="capitalize">
-              {company.company_type}
-            </Badge>
-          </div>
-
-          <div>
-            <Label className="text-muted-foreground">Submitted At</Label>
-            <p className="text-sm mt-1">
-              {new Date(company.created_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-
-          {company.approved_by && company.approved_at && (
+          
+          {company.onboarding_completed && (
             <div>
-              <Label className="text-muted-foreground">Approved At</Label>
-              <p className="text-sm mt-1">
-                {new Date(company.approved_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+              <Label className="text-muted-foreground">Onboarding Status</Label>
+              <Badge variant="default" className="ml-2">Completed</Badge>
+              {company.onboarding_completed_at && (
+                <span className="text-sm text-muted-foreground ml-2">
+                  on {new Date(company.onboarding_completed_at).toLocaleDateString()}
+                </span>
+              )}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {products && products.length > 0 && (
-        <Card>
+      {/* Admin Controls */}
+      <AdminCompanyControls company={company} />
+
+      {/* Company Users */}
+      {users && users.length > 0 && (
+        <Card className="bg-white">
           <CardHeader>
-            <CardTitle>Company Products</CardTitle>
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              <CardTitle>Company Users</CardTitle>
+            </div>
             <CardDescription>
-              Products listed by this company ({products.length} total)
+              User accounts associated with this company
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium">{user.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Role: <span className="capitalize">{user.role}</span> • 
+                      Joined {new Date(user.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Products */}
+      {products && products.length > 0 && (
+        <Card className="bg-white">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              <CardTitle>Products</CardTitle>
+            </div>
+            <CardDescription>
+              Products listed by this company (showing {products.length} most recent)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -224,14 +243,22 @@ export default async function CompanyReviewPage({ params }: { params: { id: stri
                   <div>
                     <p className="font-medium">{product.product_name}</p>
                     <p className="text-xs text-muted-foreground">
-                      Status: <span className="capitalize">{product.status}</span> • Listed {new Date(product.created_at).toLocaleDateString()}
+                      {product.category} • 
+                      {product.customs_status && (
+                        <Badge variant="customs" className="ml-1 text-xs">
+                          {product.customs_status}
+                        </Badge>
+                      )}
+                      {!product.customs_status && ' N/A'} • 
+                      {product.price_per_unit && product.currency 
+                        ? ` ${product.price_per_unit} ${product.currency}`
+                        : ' Price N/A'
+                      }
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link href={`/admin/products/${product.id}`}>
-                      View Product
-                    </Link>
-                  </Button>
+                  <Badge variant="outline" className="capitalize">
+                    {product.status}
+                  </Badge>
                 </div>
               ))}
             </div>
@@ -239,71 +266,85 @@ export default async function CompanyReviewPage({ params }: { params: { id: stri
         </Card>
       )}
 
-      {/* Uploaded Documents */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Uploaded Documents</CardTitle>
-          <CardDescription>
-            Review compliance and verification documents
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {documents && documents.length > 0 ? (
+      {/* Verification Documents */}
+      {documents.length > 0 && (
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle>Verification Documents</CardTitle>
+            <CardDescription>
+              Uploaded compliance and certification documents
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
-              {documents.map((doc) => (
+              {documents.map((doc: any, index: number) => (
                 <div
-                  key={doc.id}
+                  key={index}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">{doc.file_name}</p>
+                      <p className="font-medium">{doc.type || 'Document'}</p>
                       <p className="text-xs text-muted-foreground">
-                        Type: {doc.document_type || 'General'} • Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+                        {doc.filename || doc.name || 'File'}
+                        {doc.uploadedAt && ` • Uploaded ${new Date(doc.uploadedAt).toLocaleDateString()}`}
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <a 
-                      href={doc.file_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2"
-                    >
-                      View Document
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </Button>
+                  {doc.url && (
+                    <Button size="sm" variant="outline" asChild>
+                      <a 
+                        href={doc.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2"
+                      >
+                        View
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">
-              No documents uploaded
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {company.verification_notes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Admin Notes</CardTitle>
-            <CardDescription>Internal notes from previous review</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">{company.verification_notes}</p>
           </CardContent>
         </Card>
       )}
 
-      <CompanyApprovalActions 
-        companyId={company.id}
-        currentStatus={company.verification_status}
-        hasVAT={!!company.tax_id}
-        vatValidated={company.vat_validated}
-      />
+      {/* RFQs (Optional) */}
+      {rfqs && rfqs.length > 0 && (
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle>Recent RFQs</CardTitle>
+            <CardDescription>
+              Quote requests received by this supplier
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {rfqs.map((rfq) => (
+                <div
+                  key={rfq.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {rfq.target_subcategory || rfq.target_category || 'RFQ'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      From {rfq.buyer_country} • {new Date(rfq.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="capitalize">
+                    {rfq.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

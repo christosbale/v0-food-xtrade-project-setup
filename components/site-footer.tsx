@@ -4,7 +4,7 @@ import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react'
 export function SiteFooter() {
   return (
     <footer className="w-full border-t border-accent/15 bg-primary">
-      <div className="container py-16 md:py-20">
+      <div className="container-boxed py-16 md:py-20">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <Link href="/" className="inline-block">

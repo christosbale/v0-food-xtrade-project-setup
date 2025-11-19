@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { LayoutDashboard, Package, ShoppingCart, MessageSquare, BarChart3, Settings, Menu, X, CreditCard, Building2, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, MessageSquare, BarChart3, Settings, Building2, CreditCard, ShieldCheck, LogOut } from 'lucide-react'
 import { isCurrentUserAdmin } from '@/lib/auth/current-company-client'
 
 const sidebarNavItems = [
@@ -53,7 +52,6 @@ const sidebarNavItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
@@ -61,69 +59,66 @@ export function DashboardSidebar() {
   }, [])
 
   return (
-    <>
-      {/* Mobile toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed left-4 top-20 z-40 lg:hidden"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
+    <aside className="sticky top-0 h-screen w-[260px] bg-[#0D1117] flex flex-col">
+      {/* Logo area */}
+      <div className="px-6 py-8 border-b border-white/10">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Building2 className="h-5 w-5 text-white" />
+          <span className="font-bold text-base text-white tracking-tight">foodXtrade</span>
+        </Link>
+        <p className="text-[11px] text-white/60 mt-1 font-medium uppercase tracking-wide">Dashboard</p>
+      </div>
 
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-background/80 backdrop-blur-sm lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
+      {/* Admin link */}
+      {isAdmin && (
+        <div className="px-4 pt-6 pb-3">
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-white bg-[#3DA9FC]/20 hover:bg-[#3DA9FC]/30 transition-colors border-l-[4px] border-[#3DA9FC]"
+          >
+            <ShieldCheck className="h-4 w-4" />
+            Admin Panel
+          </Link>
+        </div>
       )}
-
-      <aside
-        className={cn(
-          'fixed left-0 top-[64px] z-30 h-[calc(100vh-64px)] w-80 border-r bg-white transition-transform duration-300 lg:sticky lg:translate-x-0',
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        <nav className="flex h-full flex-col gap-3 p-12">
-          {isAdmin && (
-            <>
-              <Link
-                href="/admin"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-4 rounded-sm bg-secondary px-6 py-5 text-base font-bold text-secondary-foreground transition-all hover:bg-secondary/90 hover:shadow-lg"
-              >
-                <ShieldCheck className="h-6 w-6" />
-                Admin Panel
-              </Link>
-              <div className="h-px bg-border my-6" />
-            </>
-          )}
-          
+      
+      {/* Navigation items */}
+      <nav className="flex-1 px-4 py-6">
+        <ul className="space-y-1">
           {sidebarNavItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
             
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  'flex items-center gap-4 rounded-sm px-6 py-5 text-base font-semibold transition-all',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-muted'
-                )}
-              >
-                <Icon className="h-6 w-6" />
-                {item.title}
-              </Link>
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-md text-[14px] font-medium transition-colors',
+                    isActive
+                      ? 'text-white bg-white/10 border-l-[4px] border-[#3DA9FC]'
+                      : 'text-white/80 hover:text-white hover:bg-white/5 border-l-[4px] border-transparent'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.title}
+                </Link>
+              </li>
             )
           })}
-        </nav>
-      </aside>
-    </>
+        </ul>
+      </nav>
+
+      {/* Logout at bottom */}
+      <div className="px-4 py-6 border-t border-white/10">
+        <Link
+          href="/api/auth/signout"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-md text-[14px] font-medium text-white/60 hover:text-white/80 hover:bg-white/5 transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Link>
+      </div>
+    </aside>
   )
 }

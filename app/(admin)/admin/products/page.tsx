@@ -11,233 +11,417 @@ import {
 } from "@/components/ui/table"
 import Link from "next/link"
 import { createClient } from '@/lib/supabase/server'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PRODUCT_CATEGORIES } from '@/config/product-categories'
+import { CheckCircle2 } from 'lucide-react'
+import { formatPrice } from '@/lib/utils/currency'
 
-export default async function AdminProductsPage() {
+function getRiskCategory(riskScore: number | null): 'low' | 'medium' | 'high' | 'unknown' {
+  if (riskScore === null) return 'unknown'
+  if (riskScore < 40) return 'high'
+  if (riskScore <= 70) return 'medium'
+  return 'low'
+}
+
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: { 
+    category?: string
+    subcategory?: string
+    customs_status?: string
+    verification_status?: string
+    risk?: string
+    sort?: 'price_asc' | 'price_desc' | 'risk_asc' | 'risk_desc'
+  }
+}) {
   const supabase = await createClient()
   
-  // Fetch all products with company information
-  const { data: products } = await supabase
+  let query = supabase
     .from('products')
     .select(`
-      *,
-      companies:company_id (
+      id,
+      product_name,
+      category,
+      origin_country,
+      customs_status,
+      price_per_unit,
+      currency,
+      company_id,
+      companies (
         company_name,
-        country
+        verification_status,
+        risk_score
       )
     `)
-    .order('created_at', { ascending: false })
+    .eq('status', 'published')
+  
+  if (searchParams.category && searchParams.category !== 'all') {
+    query = query.eq('category', searchParams.category)
+  }
+  
+  if (searchParams.customs_status && searchParams.customs_status !== 'all') {
+    query = query.eq('customs_status', searchParams.customs_status)
+  }
+  
+  const { data: productsRaw, error } = await query
 
-  const publishedProducts = products?.filter(p => p.status === 'published') || []
-  const draftProducts = products?.filter(p => p.status === 'draft') || []
-  const reviewedProducts = products?.filter(p => p.reviewed_by !== null) || []
-  const unreviewedProducts = products?.filter(p => p.reviewed_by === null && p.status === 'published') || []
+  if (error) {
+    console.error('[v0] Error fetching products:', error)
+  }
+
+  let products = productsRaw || []
+  
+  if (searchParams.verification_status && searchParams.verification_status !== 'all') {
+    products = products.filter(p => 
+      p.companies?.verification_status === searchParams.verification_status
+    )
+  }
+  
+  if (searchParams.risk && searchParams.risk !== 'all') {
+    products = products.filter(p => 
+      getRiskCategory(p.companies?.risk_score || null) === searchParams.risk
+    )
+  }
+
+  if (searchParams.subcategory && searchParams.subcategory !== 'all') {
+    products = products.filter(p => 
+      p.product_name?.toLowerCase().includes(searchParams.subcategory?.toLowerCase() || '')
+    )
+  }
+  
+  if (searchParams.sort) {
+    products = products.sort((a, b) => {
+      switch (searchParams.sort) {
+        case 'price_asc':
+          return (a.price_per_unit || 0) - (b.price_per_unit || 0)
+        case 'price_desc':
+          return (b.price_per_unit || 0) - (a.price_per_unit || 0)
+        case 'risk_asc':
+          return (a.companies?.risk_score || 100) - (b.companies?.risk_score || 100)
+        case 'risk_desc':
+          return (b.companies?.risk_score || 0) - (a.companies?.risk_score || 0)
+        default:
+          return 0
+      }
+    })
+  }
+
+  // Get unique values for filters
+  const uniqueCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort()
+  const uniqueCustomsStatus = Array.from(new Set(products.map(p => p.customs_status).filter(Boolean))).sort()
+  
+  // Get category label helper
+  const getCategoryLabel = (categoryId: string | null) => {
+    if (!categoryId) return '—'
+    const category = PRODUCT_CATEGORIES.find(c => c.id === categoryId)
+    return category?.label || categoryId
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Product Moderation</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Products</h2>
         <p className="text-muted-foreground">
-          Review and manage all products on the platform
+          View and manage all published products
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+            <Badge variant="default">{products.length}</Badge>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{products?.length || 0}</div>
-          </CardContent>
         </Card>
-
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Verified Suppliers</CardTitle>
+            <Badge variant="secondary">
+              {products.filter(p => p.companies?.verification_status === 'verified').length}
+            </Badge>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{publishedProducts.length}</div>
-          </CardContent>
         </Card>
-
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Needs Review</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">EU Cleared</CardTitle>
+            <Badge variant="outline">
+              {products.filter(p => p.customs_status === 'eu_cleared').length}
+            </Badge>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{unreviewedProducts.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Reviewed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{reviewedProducts.length}</div>
-          </CardContent>
         </Card>
       </div>
 
-      {/* Products Table with Tabs */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4">
+            {uniqueCategories.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Category:</span>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant={!searchParams.category || searchParams.category === 'all' ? 'default' : 'outline'}
+                    asChild
+                  >
+                    <Link href="/admin/products?category=all">All</Link>
+                  </Button>
+                  {uniqueCategories.slice(0, 4).map(cat => (
+                    <Button
+                      key={cat}
+                      size="sm"
+                      variant={searchParams.category === cat ? 'default' : 'outline'}
+                      asChild
+                    >
+                      <Link href={`/admin/products?category=${cat}`}>
+                        {getCategoryLabel(cat)}
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {uniqueCustomsStatus.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Customs:</span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant={!searchParams.customs_status || searchParams.customs_status === 'all' ? 'default' : 'outline'}
+                    asChild
+                  >
+                    <Link href="/admin/products?customs_status=all">All</Link>
+                  </Button>
+                  {uniqueCustomsStatus.map(status => (
+                    <Button
+                      key={status}
+                      size="sm"
+                      variant={searchParams.customs_status === status ? 'default' : 'outline'}
+                      asChild
+                    >
+                      <Link href={`/admin/products?customs_status=${status}`}>
+                        {status?.replace('_', ' ')}
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Verification:</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={!searchParams.verification_status || searchParams.verification_status === 'all' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?verification_status=all">All</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.verification_status === 'verified' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?verification_status=verified">Verified</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.verification_status === 'pending' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?verification_status=pending">Pending</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Risk:</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={!searchParams.risk || searchParams.risk === 'all' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?risk=all">All</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.risk === 'low' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?risk=low">Low</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.risk === 'medium' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?risk=medium">Medium</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.risk === 'high' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?risk=high">High</Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Sort:</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={searchParams.sort === 'price_asc' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?sort=price_asc">Price ↑</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.sort === 'price_desc' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?sort=price_desc">Price ↓</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.sort === 'risk_asc' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?sort=risk_asc">Risk ↑</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={searchParams.sort === 'risk_desc' ? 'default' : 'outline'}
+                  asChild
+                >
+                  <Link href="/admin/products?sort=risk_desc">Risk ↓</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>All Products</CardTitle>
           <CardDescription>
-            View and moderate products from all suppliers
+            {products.length} {products.length === 1 ? 'product' : 'products'} found
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="unreviewed">
-            <TabsList>
-              <TabsTrigger value="unreviewed">Needs Review ({unreviewedProducts.length})</TabsTrigger>
-              <TabsTrigger value="all">All Products ({products?.length || 0})</TabsTrigger>
-              <TabsTrigger value="reviewed">Reviewed ({reviewedProducts.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="unreviewed" className="mt-4">
-              {unreviewedProducts.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product Name</TableHead>
-                      <TableHead>Supplier</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {unreviewedProducts.map((product: any) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.product_name}</TableCell>
-                        <TableCell>{product.companies?.company_name || 'N/A'}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{product.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          ${product.price_per_unit}/{product.unit}
-                        </TableCell>
-                        <TableCell>
-                          <Badge>{product.status}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" asChild>
-                            <Link href={`/admin/products/${product.id}`}>
-                              Review
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No products need review
-                </p>
-              )}
-            </TabsContent>
-
-            <TabsContent value="all" className="mt-4">
-              {products && products.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product Name</TableHead>
-                      <TableHead>Supplier</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Reviewed</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((product: any) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.product_name}</TableCell>
-                        <TableCell>{product.companies?.company_name || 'N/A'}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{product.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          ${product.price_per_unit}/{product.unit}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={product.status === 'published' ? 'default' : 'secondary'}>
-                            {product.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {product.reviewed_by ? (
-                            <Badge className="bg-green-500">Yes</Badge>
-                          ) : (
-                            <Badge variant="outline">No</Badge>
+          {products.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product Title</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Origin</TableHead>
+                  <TableHead>Customs</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Risk Score</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((product) => {
+                  const company = product.companies
+                  const riskCategory = getRiskCategory(company?.risk_score || null)
+                  
+                  return (
+                    <TableRow 
+                      key={product.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => window.location.href = `/products/${product.id}`}
+                    >
+                      <TableCell className="font-medium max-w-[200px] truncate">
+                        <Link href={`/products/${product.id}`} className="hover:underline">
+                          {product.product_name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Link 
+                            href={`/admin/companies/${product.company_id}`}
+                            className="hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {company?.company_name || '—'}
+                          </Link>
+                          {company?.verification_status === 'verified' && (
+                            <Badge variant="verified" className="text-xs">
+                              ✓
+                            </Badge>
                           )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" asChild>
-                            <Link href={`/admin/products/${product.id}`}>
-                              View
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No products found
-                </p>
-              )}
-            </TabsContent>
-
-            <TabsContent value="reviewed" className="mt-4">
-              {reviewedProducts.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product Name</TableHead>
-                      <TableHead>Supplier</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Reviewed At</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{getCategoryLabel(product.category)}</span>
+                      </TableCell>
+                      <TableCell>{product.origin_country || '—'}</TableCell>
+                      <TableCell>
+                        {product.customs_status ? (
+                          <Badge variant="customs" className="capitalize">
+                            {product.customs_status.replace('_', ' ')}
+                          </Badge>
+                        ) : '—'}
+                      </TableCell>
+                      <TableCell>
+                        {product.price_per_unit ? (
+                          <span className="font-medium">
+                            {formatPrice(product.price_per_unit, product.currency || 'EUR')}
+                          </span>
+                        ) : '—'}
+                      </TableCell>
+                      <TableCell>
+                        {company?.risk_score !== null ? (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{company.risk_score}</span>
+                            <Badge 
+                              variant={
+                                riskCategory === 'low' ? 'risk-low' :
+                                riskCategory === 'medium' ? 'risk-medium' :
+                                riskCategory === 'high' ? 'risk-high' :
+                                'outline'
+                              }
+                              className="text-xs capitalize"
+                            >
+                              {riskCategory}
+                            </Badge>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                        >
+                          <Link href={`/products/${product.id}`}>
+                            View
+                          </Link>
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {reviewedProducts.map((product: any) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.product_name}</TableCell>
-                        <TableCell>{product.companies?.company_name || 'N/A'}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{product.category}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {product.reviewed_at ? new Date(product.reviewed_at).toLocaleDateString() : 'N/A'}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" asChild>
-                            <Link href={`/admin/products/${product.id}`}>
-                              View
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No reviewed products
-                </p>
-              )}
-            </TabsContent>
-          </Tabs>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              No products found matching the selected filters
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

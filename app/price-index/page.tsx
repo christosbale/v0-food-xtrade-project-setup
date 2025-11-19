@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { PRODUCT_CATEGORIES } from '@/config/product-categories'
+import { SiteHeader } from '@/components/site-header'
+import { SiteFooter } from '@/components/site-footer'
 
 interface PriceIndexData {
   subcategory: string
@@ -148,77 +150,77 @@ export default async function PriceIndexPage() {
   })
   
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-[1280px] px-6 py-16 md:px-10 md:py-24">
-        {/* Header */}
-        <div className="mb-16 text-center">
-          <h1 className="text-display-large font-bold text-black mb-4">
-            Global Price Index
-          </h1>
-          <p className="text-title-large text-black/60 max-w-2xl mx-auto">
-            Real-time wholesale price trends across food commodities.
-          </p>
-        </div>
-        
-        {indexData.length === 0 ? (
-          <Card className="border-2 border-border">
-            <CardContent className="py-12 text-center">
-              <p className="text-title-medium text-muted-foreground">
+    <>
+      <SiteHeader />
+      <div className="min-h-screen bg-white">
+        <div className="container-boxed py-24">
+          {/* Header */}
+          <div className="mb-20">
+            <h1 className="text-display-medium font-bold text-[#0D1117] mb-6">
+              Global Price Index
+            </h1>
+            <p className="text-body-large text-[#7A7A7A] max-w-3xl">
+              Real-time wholesale price trends across food commodities. All prices in EUR per kilogram.
+            </p>
+          </div>
+          
+          {indexData.length === 0 ? (
+            <div className="border border-[#E2E2E2] p-12 text-center">
+              <p className="text-body-medium text-[#7A7A7A]">
                 No price data available yet. Price index will populate as suppliers add products.
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-12">
-            {Array.from(categorizedData.entries()).map(([categoryId, items]) => {
-              const categoryLabel = items[0].categoryLabel
-              
-              return (
-                <div key={categoryId} className="space-y-6">
-                  <h2 className="text-headline-large font-bold text-black border-b-2 border-border pb-4">
-                    {categoryLabel}
-                  </h2>
-                  
-                  <div className="grid gap-4">
-                    {items.map((item) => (
-                      <Card
-                        key={`${item.category}:${item.subcategory}`}
-                        className="border-2 border-border hover:border-[#FFB84D] transition-colors"
-                      >
-                        <CardHeader className="pb-4">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-title-large font-bold text-black">
+            </div>
+          ) : (
+            <div className="space-y-16">
+              {Array.from(categorizedData.entries()).map(([categoryId, items]) => {
+                const categoryLabel = items[0].categoryLabel
+                
+                return (
+                  <section key={categoryId} className="space-y-6">
+                    <div className="border-b border-[#E2E2E2] pb-4">
+                      <h2 className="text-headline-medium font-bold text-[#0D1117]">
+                        {categoryLabel}
+                      </h2>
+                    </div>
+                    
+                    <div className="grid gap-3">
+                      {items.map((item) => (
+                        <div
+                          key={`${item.category}:${item.subcategory}`}
+                          className="border border-[#E2E2E2] p-6 hover:border-[#0D1117] transition-colors bg-white"
+                        >
+                          <div className="flex items-center justify-between mb-5">
+                            <h3 className="text-base font-bold text-[#0D1117]">
                               {item.subcategoryLabel}
                             </h3>
                             <TrendIndicator trend={item.trend} />
                           </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                          
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                              <p className="text-body-small text-muted-foreground mb-1">
+                              <p className="text-xs text-[#7A7A7A] mb-2 uppercase tracking-wide">
                                 Average Price
                               </p>
-                              <p className="text-headline-medium font-bold text-black">
+                              <p className="text-2xl font-bold text-[#0D1117]">
                                 €{item.avgPrice.toFixed(2)}
-                                <span className="text-body-medium text-muted-foreground ml-1">
+                                <span className="text-sm text-[#7A7A7A] ml-2 font-normal">
                                   /kg
                                 </span>
                               </p>
                             </div>
                             
                             <div>
-                              <p className="text-body-small text-muted-foreground mb-1">
+                              <p className="text-xs text-[#7A7A7A] mb-2 uppercase tracking-wide">
                                 Price Range
                               </p>
-                              <p className="text-title-large font-medium text-black">
+                              <p className="text-base font-medium text-[#0D1117]">
                                 €{item.minPrice.toFixed(2)} – €{item.maxPrice.toFixed(2)}
                               </p>
                             </div>
                             
                             <div>
-                              <p className="text-body-small text-muted-foreground mb-1">
-                                Trend (30d)
+                              <p className="text-xs text-[#7A7A7A] mb-2 uppercase tracking-wide">
+                                30-Day Trend
                               </p>
                               <div className="flex items-center gap-2">
                                 <TrendIndicator trend={item.trend} />
@@ -228,25 +230,26 @@ export default async function PriceIndexPage() {
                               </div>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )
+              })}
+            </div>
+          )}
+          
+          {/* Footer note */}
+          <div className="mt-20 text-center">
+            <p className="text-sm text-[#7A7A7A]">
+              Prices calculated from recent supplier listings and updated continuously.
+              <br />
+              All prices shown in EUR per kilogram (€/kg).
+            </p>
           </div>
-        )}
-        
-        {/* Footer note */}
-        <div className="mt-16 text-center">
-          <p className="text-body-medium text-muted-foreground">
-            Prices are calculated from recent supplier listings and updated continuously.
-            <br />
-            All prices shown in EUR per kilogram (€/kg).
-          </p>
         </div>
       </div>
-    </div>
+      <SiteFooter />
+    </>
   )
 }

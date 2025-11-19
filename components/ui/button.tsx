@@ -5,24 +5,29 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-title-small font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-[6px]",
   {
     variants: {
       variant: {
-        default: 'bg-[#FFB84D] text-black hover:bg-[#FFB84D]/90 shadow-sm rounded-[10px] h-12 px-6',
-        outline: 'border border-black bg-transparent text-black hover:bg-black/5 rounded-[10px] h-12 px-6',
-        destructive: 'bg-destructive text-white hover:bg-destructive/90 rounded-[10px] h-12 px-6',
-        secondary: 'bg-[#FFB84D] text-black hover:bg-[#FFB84D]/80 rounded-[10px] h-12 px-6',
-        ghost: 'hover:bg-accent/10 hover:text-black text-black rounded-[10px]',
-        link: 'text-black underline-offset-4 hover:underline',
+        // Primary CTA: BlueBlack background, white text
+        default: 'bg-[#0D1117] text-white hover:bg-[#0D1117]/90 shadow-sm',
+        // Secondary: White background, BlueBlack border and text
+        outline: 'border border-[#0D1117] bg-white text-[#0D1117] hover:bg-[#F6F6F6]',
+        destructive: 'bg-destructive text-white hover:bg-destructive/90',
+        // Ghost for minimal actions
+        ghost: 'hover:bg-[#F6F6F6] hover:text-[#0D1117] text-[#0D1117]',
+        link: 'text-[#0D1117] underline-offset-4 hover:underline',
+        // Yellow used only as minimal accent
+        secondary: 'bg-[#FFD036] text-[#0D1117] hover:bg-[#FFD036]/90',
       },
       size: {
-        default: 'h-12 px-6',
-        sm: 'h-10 px-4 text-body-medium',
-        lg: 'h-14 px-8 text-title-medium',
-        icon: 'size-12',
-        'icon-sm': 'size-10',
-        'icon-lg': 'size-14',
+        // Padding 14px 28px per spec
+        default: 'h-auto py-[14px] px-[28px] text-base',
+        sm: 'h-auto py-2 px-4 text-sm',
+        lg: 'h-auto py-4 px-8 text-lg',
+        icon: 'size-10',
+        'icon-sm': 'size-8',
+        'icon-lg': 'size-12',
       },
     },
     defaultVariants: {
