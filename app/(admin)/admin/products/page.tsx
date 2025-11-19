@@ -87,7 +87,7 @@ export default async function AdminProductsPage({
     } | null
   }
 
-  let products = ((productsRaw || []) as SupabaseProduct[]).map(p => ({
+  let products = ((productsRaw || []) as unknown as SupabaseProduct[]).map(p => ({
     ...p,
     companies: Array.isArray(p.companies) ? p.companies[0] : p.companies
   }))
