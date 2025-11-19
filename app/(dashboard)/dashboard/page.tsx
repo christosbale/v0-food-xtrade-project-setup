@@ -10,6 +10,13 @@ export default async function DashboardPage() {
   
   let company = null
   let user = null
+  let stats = {
+    totalProducts: 0,
+    activeRFQs: 0,
+    monthlyRevenue: 0,
+    newBuyers: 0,
+  }
+  let recentRFQs: any[] = []
 
   try {
     const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
@@ -31,6 +38,58 @@ export default async function DashboardPage() {
         console.error('[v0] Dashboard: Company fetch error:', companyError)
       } else {
         company = companyData
+      }
+
+      if (company) {
+        // Get total products count
+        const { count: productsCount } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('company_id', company.id)
+
+        stats.totalProducts = productsCount || 0
+
+        // Get active RFQs count
+        const { count: rfqsCount } = await supabase
+          .from('rfqs')
+          .select('*', { count: 'exact', head: true })
+          .eq('supplier_company_id', company.id)
+          .in('status', ['new', 'in_discussion'])
+
+        stats.activeRFQs = rfqsCount || 0
+
+        // Get recent RFQs with product information
+        const { data: rfqsData } = await supabase
+          .from('rfqs')
+          .select(`
+            id,
+            buyer_company_name,
+            desired_quantity,
+            unit,
+            status,
+            created_at,
+            products!inner (
+              product_name
+            )
+          `)
+          .eq('supplier_company_id', company.id)
+          .order('created_at', { ascending: false })
+          .limit(3)
+
+        if (rfqsData) {
+          recentRFQs = rfqsData.map(rfq => ({
+            id: rfq.id,
+            title: `${(rfq.products as any)?.product_name} - ${rfq.desired_quantity}${rfq.unit}`,
+            buyer: rfq.buyer_company_name,
+            date: getRelativeTime(rfq.created_at),
+            status: rfq.status,
+          }))
+        }
+
+        // Note: Monthly revenue and new buyers stats would require additional tables/logic
+        // Setting to 0 for now as they're not in the current schema
+        stats.monthlyRevenue = 0
+        stats.newBuyers = 0
       }
     }
   } catch (error) {
@@ -83,19 +142,6 @@ export default async function DashboardPage() {
     )
   }
 
-  const stats = {
-    totalProducts: 48,
-    activeRFQs: 12,
-    monthlyRevenue: 125000,
-    newBuyers: 8,
-  }
-
-  const recentRFQs = [
-    { id: 1, title: 'Organic Apples - 500kg', buyer: 'FreshMart Ltd', date: '2 hours ago', status: 'pending' },
-    { id: 2, title: 'Premium Coffee Beans - 100kg', buyer: 'Cafe Express', date: '5 hours ago', status: 'pending' },
-    { id: 3, title: 'Fresh Tomatoes - 1000kg', buyer: 'Grocery Chain', date: '1 day ago', status: 'responded' },
-  ]
-
   return (
     <div className="space-y-8 sm:space-y-12 md:space-y-16">
       <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6 md:gap-8">
@@ -133,7 +179,7 @@ export default async function DashboardPage() {
           <CardContent className="p-0">
             <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">{stats.totalProducts}</div>
             <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
-              +12% from last month
+              Active products
             </p>
           </CardContent>
         </Card>
@@ -148,7 +194,7 @@ export default async function DashboardPage() {
           <CardContent className="p-0">
             <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">{stats.activeRFQs}</div>
             <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
-              +8% from last month
+              Pending responses
             </p>
           </CardContent>
         </Card>
@@ -161,9 +207,9 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">${(stats.monthlyRevenue / 1000).toFixed(0)}k</div>
+            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">N/A</div>
             <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
-              +15% from last month
+              Coming soon
             </p>
           </CardContent>
         </Card>
@@ -176,9 +222,9 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">{stats.newBuyers}</div>
+            <div className="text-3xl sm:text-4xl font-bold text-[#0D1117]">N/A</div>
             <p className="text-xs text-[#7A7A7A] mt-2 sm:mt-3">
-              +20% from last month
+              Coming soon
             </p>
           </CardContent>
         </Card>
@@ -191,25 +237,35 @@ export default async function DashboardPage() {
             <CardDescription className="text-sm text-[#7A7A7A] mt-2">Latest quote requests from buyers</CardDescription>
           </CardHeader>
           <CardContent className="p-0 space-y-3 sm:space-y-4">
-            {recentRFQs.map((rfq) => (
-              <div key={rfq.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-md border border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors">
-                <div className="space-y-1">
-                  <p className="font-bold text-sm text-[#0D1117]">{rfq.title}</p>
-                  <p className="text-xs text-[#7A7A7A]">{rfq.buyer}</p>
-                </div>
-                <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 self-stretch sm:self-auto">
-                  <Badge variant={rfq.status === 'responded' ? 'default' : 'outline'} className="text-xs font-bold uppercase">
-                    {rfq.status}
-                  </Badge>
-                  <p className="text-xs text-[#7A7A7A]">{rfq.date}</p>
-                </div>
+            {recentRFQs.length === 0 ? (
+              <div className="text-center py-8">
+                <ShoppingCart className="h-12 w-12 text-[#7A7A7A]/30 mx-auto mb-3" />
+                <p className="text-sm text-[#7A7A7A]">No RFQs yet</p>
+                <p className="text-xs text-[#7A7A7A] mt-1">When buyers request quotes, they'll appear here</p>
               </div>
-            ))}
-            <Button asChild variant="outline" className="w-full mt-4 sm:mt-6 border-[#0D1117] text-[#0D1117] hover:bg-[#F6F6F6] font-bold rounded-md h-11">
-              <Link href="/dashboard/rfqs">
-                View All RFQs
-              </Link>
-            </Button>
+            ) : (
+              <>
+                {recentRFQs.map((rfq) => (
+                  <div key={rfq.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-md border border-[#E2E2E2] hover:bg-[#F6F6F6] transition-colors">
+                    <div className="space-y-1">
+                      <p className="font-bold text-sm text-[#0D1117]">{rfq.title}</p>
+                      <p className="text-xs text-[#7A7A7A]">{rfq.buyer}</p>
+                    </div>
+                    <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 self-stretch sm:self-auto">
+                      <Badge variant={rfq.status === 'closed' ? 'outline' : 'default'} className="text-xs font-bold uppercase">
+                        {rfq.status === 'new' ? 'New' : rfq.status === 'in_discussion' ? 'In Discussion' : 'Closed'}
+                      </Badge>
+                      <p className="text-xs text-[#7A7A7A]">{rfq.date}</p>
+                    </div>
+                  </div>
+                ))}
+                <Button asChild variant="outline" className="w-full mt-4 sm:mt-6 border-[#0D1117] text-[#0D1117] hover:bg-[#F6F6F6] font-bold rounded-md h-11">
+                  <Link href="/dashboard/rfqs">
+                    View All RFQs
+                  </Link>
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -248,4 +304,21 @@ export default async function DashboardPage() {
       </div>
     </div>
   )
+}
+
+function getRelativeTime(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 60) {
+    return diffMins <= 1 ? '1 minute ago' : `${diffMins} minutes ago`
+  } else if (diffHours < 24) {
+    return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`
+  } else {
+    return diffDays === 1 ? '1 day ago' : `${diffDays} days ago`
+  }
 }
